@@ -1,0 +1,46 @@
+== Project Name ==
+
+C3DL test suite.
+
+== Project Description ==
+
+Create and implement an automated test suite which compares C3DL still frame render demos and a still frame pictures. Additional innovation will be required for the implementation of moving C3DL demos.
+
+== Project Leader(s) ==
+
+Andor Salga
+Catherine Leung
+
+== Project Contributor(s) ==
+
+Andor Salga
+Catherine Leung
+Carlin Desautels
+Peter Leaning
+
+== Project Details ==
+
+The project will require the initial step of porting Processing.js automated test suite created by David Humphrey. That will produce a framework for which the C3DL demos can be added. The framework will need to be tailored for the project needs, such as: moving demos need to be integrated, replacing Processing.js still frame demos with C3DL ones.
+
+== Project Plan ==
+
+Goals for each release:
+* 0.1: 
+** Port Davids code
+** Integrate a C3DL demo
+** Archive with git and github
+** Integrate github with C3DL dev team
+* 0.2: 
+** Integrate all still C3DL still demos
+** Streamline automation to developers needs
+** Attempt method of including moving demos
+* 0.3:
+** Fully integrate existing moving C3DL demos
+** Attempt personal demo.
+
+== Project News ==
+
+* C3DL lighthouse
+** http://c3dl.lighthouseapp.com/dashboard
+* Processing.js Repo
+** http://github.com/annasob/processing-js
