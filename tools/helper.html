@@ -29,12 +29,16 @@
         canvas: document.getElementById('sketch'),
         code:   document.getElementById('code'),
         output: document.getElementById('output'),
-        p:      null,
+        c:      null,
 
         runSketch: function() {
           try {
             this.output.value = '';
-            p = new Processing(this.canvas, this.code.value);
+            //c = new Processing(this.canvas, this.code.value);
+            
+            c = new c3dl.copyObj(function(){this.code.value}());
+            //c.setCanvasTag(this.canvas);
+            
             return true;
           } catch (e) {
             this.output.value = "Error! Error was:\n" + e.toString();
@@ -67,7 +71,7 @@
 
           try {          
             // if the test was 2d, we can just call getImageData
-            if (!p.use3DContext) {
+            if (!c.use3DContext) {
               var context = this.canvas.getContext('2d');
               var imgData = context.getImageData(0,0,this.canvas.width,this.canvas.height).data;
               var pixels = [];
