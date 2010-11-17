@@ -1,0 +1,31 @@
+<html>
+  <head>
+    <title>c3dl Ref Tests</title>
+    <script type="application/javascript" src="./c3dl/c3dapi.js" ></script>
+    <script type="application/javascript" src="tester.js"></script>
+  </head>
+  <body>
+    <h1>c3dl Ref Test Runner</h1>
+    <h3>Settings</h3>
+    <div>Run Tests: 
+      <select id="test-type" onchange="updateSelectedTests();">
+        <option value="2D,3D" selected>All</option>
+        <option value="2D">2D Only</option>
+        <option value="3D">3D Only</option>
+        <option value="endShape2D">Moving2D</option>
+        <option value="endShape3D">Moving3D</option>
+        <option value="Calibration">Calibration</option>
+      </select>&nbsp;
+      Blur Radius: 
+        <input type="text" size="2" id="sigma" onchange="updateTolerance();">&nbsp;
+      Epsilon (0-1.0): 
+        <input type="text" size="4" id="epsilon" onchange="updateTolerance();">&nbsp;
+      <input onclick="runTests(selectedTests);" type="button" value="Start"></input>
+    </div>
+    <h3>Results</h3>
+    <div id="results" style="margin: 5px; padding-top: 10px;">
+       <canvas id="test" width="100" height="100"></canvas>
+    </div>
+    <div id="total"></div>
+  </body>
+</html>

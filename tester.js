@@ -1,0 +1,356 @@
+c3dl.addMainCallBack(canvasMain, "test");
+c3dl.addModel("./resources/duck.dae");
+var duck;
+// The program main
+function canvasMain(canvasName){
+  // Create new c3dl.Scene object
+  scn = new c3dl.Scene();
+  scn.setCanvasTag(canvasName);
+  // Create GL context
+  renderer = new c3dl.WebGL();
+  renderer.createRenderer(this);
+  // Attach renderer to the scene
+  scn.setRenderer(renderer);
+  scn.init(canvasName);
+  if(renderer.isReady() ){
+    duck = new c3dl.Collada();
+    duck.init("./resources/duck.dae");
+    // Add the object to the scene
+    scn.addObjectToScene(duck);
+    // Create a camera
+    var cam = new c3dl.FreeCamera();
+    cam.setPosition(new Array(0, 0, -500.0));
+    cam.setLookAtPoint(new Array(0.0, 0.0, 0.0));
+    // Add the camera to the scene
+    scn.setCamera(cam);
+    scn.startScene();
+  }
+}
+/*
+      var selectedTests = [];
+      var total = document.getElementById('total');
+      total.innerHTML = '';
+
+      updateSelectedTests();
+
+      // Tolerance values and kernel for blur
+      var sigma = 2; // radius
+      document.getElementById('sigma').value = sigma;
+      var epsilon = 0.05; // match accuracy ~5%
+      document.getElementById('epsilon').value = epsilon;
+      var kernel, kernelSize, kernelSum;
+      buildKernel();     
+
+      try {
+        // Opera createImageData fix
+        if (!("createImageData" in CanvasRenderingContext2D.prototype)) {
+          CanvasRenderingContext2D.prototype.createImageData = function(sw,sh) { return this.getImageData(0,0,sw,sh); }
+        }
+      } catch(e) {}
+
+      function updateSelectedTests() {
+        var selectControl = document.getElementById('test-type');
+        var selectedTags = selectControl.value.split(',');
+        
+        selectedTests = new Array();
+        for(var i = 0; i < tests.length; ++i) {
+          var found = false;
+          // checking if any selected tags present in test tags
+          for(var j = 0; j < selectedTags.length && !found; ++j) {
+            for(var q = 0; q < tests[i].tags.length && !found; ++q) {
+              if(tests[i].tags[q] == selectedTags[j]) found = true;
+            }
+          }
+          if(found) {
+            selectedTests.push(tests[i]);
+          }
+        }
+
+        var testCount = document.getElementById('testCount');
+        testCount.innerHTML = '&nbsp;(' + selectedTests.length + ' tests)';
+      }
+
+      function buildKernel() {
+        var ss = sigma * sigma;
+        var factor = 2 * Math.PI * ss;
+        kernel = new Array();
+        kernel.push(new Array());
+        var i = 0, j;
+        do {
+            var g = Math.exp(-(i * i) / (2 * ss)) / factor;
+            if (g < 1e-3) break;
+            kernel[0].push(g);
+            ++i;
+        } while (i < 7);
+        kernelSize = i;
+        for (j = 1; j < kernelSize; ++j) {
+            kernel.push(new Array());
+            for (i = 0; i < kernelSize; ++i) {
+                var g = Math.exp(-(i * i + j * j) / (2 * ss)) / factor;
+                kernel[j].push(g);
+            }
+        }
+        kernelSum = 0;
+        for (j = 1 - kernelSize; j < kernelSize; ++j) {
+            for (i = 1 - kernelSize; i < kernelSize; ++i) {
+                kernelSum += kernel[Math.abs(j)][Math.abs(i)];
+            }
+        }
+      }
+
+      function updateTolerance() {
+        var newS = document.getElementById('sigma').value;
+        if (newS)
+          sigma = parseInt(newS, 10);
+
+        buildKernel();
+
+        var newE = document.getElementById('epsilon').value;
+        if (newE)
+          epsilon = parseFloat(newE);
+      }
+
+      function download(file) {
+        var req = new XMLHttpRequest();
+        req.open('GET', file, false);
+        req.overrideMimeType('text/plain; charset=x-user-defined');
+        req.send(null);
+        if (req.status != 200 && req.status !=0) {
+          return null;
+        } else {
+          return req.responseText;
+        }
+      }
+
+      function getTest(testName) {
+        var responseText = download(testName);
+
+        function is3D(script) {
+          // look for size(100,100,OPENGL) or size(100,100,P3D)
+          var match = script.match(/size\([\s]*[\d]+[\s]*\,[\s]*[\d]+[\s]*\,?([^\)]+)?\)/);
+          if (match && match[1]) {
+            return match[1] == "OPENGL" || match[1] == "P3D";
+          }
+          return false;
+        }
+                                         
+        if (!responseText) {
+          return null;
+        } else {
+          // Split out the canvas info in the comment:
+          var test = {name: testName, code: responseText};
+          // looking for: //[100,100]0,0,67,0,34,...\n
+          var m = /^\/\/\[([^\]]+)\]([^\n]+)\n/.exec(test.code);
+          if (m && m.length == 3) {
+            var dims = m[1].split(',');
+            test.width = parseInt(dims[0], 10);
+            test.height = parseInt(dims[1], 10);
+            test.pixels = new Array(test.width * test.height * 4);
+            var pixelStr = m[2].split(',');
+            for (var i=0, l=pixelStr.length; i<l; i++) {
+              test.pixels[i] = parseInt(pixelStr[i], 10);
+            }
+            test.is3D = is3D(test.code);
+            return test;
+          } else {
+            // Malformed test
+            return null;
+          }
+        }
+      }
+
+      function runTests(tests) {
+        var results = document.getElementById('results');
+        results.innerHTML = '<div id="status" style="margin-bottom: 10px;">Running... (this may take some time)</div>';
+        var total = document.getElementById('total');
+        total.innerHTML = '';
+
+        var buildCanvas = function(id, w, h) {
+          var c = document.createElement('canvas');
+          c.id = id;
+          c.width = w;
+          c.height = h;
+          c.className = "test";
+          return c;
+        };
+
+        var link = function(name) {
+          return '<a href="' + name + '">' + name + '</a>';
+        };
+
+        var titleText = function(testNumber, testTotal, time, testName, failMessage) {
+          return "Test (" + testNumber + "/" + testTotal + ") [" + time + "ms]: " + link(testName) + 
+                 (failMessage ? " -- FAILED (" + failMessage + ")" : " -- PASSED");
+        };
+
+        var getPixels = function(aCanvas, isWebGL) {        
+          try {
+            if (isWebGL) {
+              var context = aCanvas.getContext("experimental-webgl");
+              
+              var data = null;
+              try{
+                // try deprecated way first (keeps code cleaner)
+                data = context.readPixels(0, 0, aCanvas.width, aCanvas.height, context.RGBA, context.UNSIGNED_BYTE);
+              }catch(e){
+                // if that failed, try new way              
+                if(!data){
+                  data = new WebGLUnsignedByteArray(aCanvas.width * aCanvas.height * 4);
+                  context.readPixels(0, 0, aCanvas.width, aCanvas.height, context.RGBA, context.UNSIGNED_BYTE, data);
+                }
+              }
+              
+              if(context.getError()){
+                  data = new WebGLUnsignedByteArray(aCanvas.width * aCanvas.height * 4);
+                  context.readPixels(0, 0, aCanvas.width, aCanvas.height, context.RGBA, context.UNSIGNED_BYTE, data);                
+              }
+              
+              return data;
+            } else {
+              return aCanvas.getContext('2d').getImageData(0, 0, aCanvas.width, aCanvas.height).data;
+            }
+          } catch (e) {
+            return null;
+          }
+        };
+
+        var passedCount = 0, failedCount = 0, tl = tests.length;
+        function nextTest(testNum) {
+          if (testNum < tl) {
+            window.setTimeout(function() { runOne(testNum); }, 10);
+          } else {
+            var info = "Tests Completed - " + failedCount + " failed, " + passedCount + " passed, " + (failedCount + passedCount) + " total."
+            document.getElementById('status').innerHTML = info;
+            total.innerHTML = info;
+          }
+        }
+
+        var runOne = function(i) {
+          var test = getTest(tests[i].path);
+          var result = document.createElement('div');
+          result.id = test.name;
+          var title = document.createElement('div');
+          title.className = "title";
+          result.appendChild(title);
+          results.appendChild(result);
+          var valueEpsilon = epsilon * 255;
+
+          if (test) {
+            var original = buildCanvas(test.name + '-original', test.width, test.height);
+            var current  = buildCanvas(test.name + '-current', test.width, test.height);
+            var diff     = buildCanvas(test.name + '-diff', test.width, test.height);
+ 
+            result.appendChild(original);
+            result.appendChild(current);
+            result.appendChild(diff);
+
+            var pixelsLen = test.pixels.length;
+
+            // draw the current version from code, timing it
+            var startTime = (new Date).getTime(), totalTime = 0;
+            var p;
+            try {
+              p = new Processing(current, test.code);
+            } catch (e) {
+              title.innerHTML = titleText(i+1, tl, 0, test.name, "Processing failed: " + e.toString());
+              failedCount++;
+              return nextTest(i+1);
+            }
+            var totalTime = (new Date).getTime() - startTime;
+            var is3D = p.use3DContext;
+
+            // draw the original based on stored pixels
+            var origCtx = original.getContext('2d');
+            var origData = origCtx.createImageData(original.width, original.height);
+            for (var l=0; l < pixelsLen; l++) {
+              if (is3D) {
+                // WebGL inverts the rows in readPixels vs. the 2D context. Flip the image around so it looks right
+                origData.data[l] = test.pixels[(original.height - 1 - Math.floor(l / 4 / original.width)) * 
+                                                original.width * 4 + (l % (original.width * 4))];
+              } else {
+                origData.data[l] = test.pixels[l];
+              }
+            }
+            origCtx.putImageData(origData, 0, 0);
+
+            // Blur pixels for diff
+            test.pixels = blur(test.pixels, test.width, test.height);
+
+            // do a visual diff on the pixels
+            var currData = getPixels(current, is3D);
+            if (!currData) {
+              title.innerHTML = titleText(i+1, tl, totalTime, test.name, "can't diff pixels");
+              failedCount++;
+              return nextTest(i+1);
+            }
+
+            if (currData.length == test.pixels.length) {
+              currData = blur(currData, test.width, test.height);
+              var diffCtx = diff.getContext('2d');
+              var diffData = diffCtx.createImageData(current.width, current.height);
+              var tp = test.pixels;
+              var failed = false;
+              for (var j=0; j < pixelsLen;) {
+                if (Math.abs(currData[j] - tp[j]) < valueEpsilon  &&
+                    Math.abs(currData[j + 1] - tp[j + 1]) < valueEpsilon &&
+                    Math.abs(currData[j + 2] - tp[j + 2]) < valueEpsilon &&
+                    Math.abs(currData[j + 3] - tp[j + 3]) < valueEpsilon)  {
+                  diffData.data[j] = diffData.data[j+1] = diffData.data[j+2] = diffData.data[j+3] = 0;
+                } else {
+                  diffData.data[j] = 255;
+                  diffData.data[j+1] = diffData.data[j+2] = 0;
+                  diffData.data[j+3] = 255;
+                  failed = true;
+                }
+                j+=4;
+              }
+              if (failed) {
+                diffCtx.putImageData(diffData, 0, 0);
+                title.innerHTML = titleText(i+1, tl, totalTime, test.name, "pixels off");
+                failedCount++;
+              } else {
+                diffCtx.fillStyle = "rgb(0,255,0)";
+                diffCtx.fillRect (0, 0, diff.width, diff.height);
+                title.innerHTML = titleText(i+1, tl, totalTime, test.name);
+                passedCount++;
+              }
+            } else {
+              title.innerHTML = titleText(i+1, tl, totalTime, test.name, "size mismatch");
+              failedCount++;
+            }
+          } else {
+            title.innerHTML = titleText(i+1, tl, totalTime, test.name, "invalid test");
+            failedCount++;
+          }
+          nextTest(i+1);
+        };
+        window.setTimeout(function() { runOne(0); }, 10);
+      }
+
+      function blur(data, width, height) {
+        var len = data.length;
+        var newData = new Array(len);
+
+        for (var y = 0; y < height; ++y) {
+          for (var x = 0; x < width; ++x) {
+            var r = 0, g = 0, b = 0, a = 0;
+            for (j = 1 - kernelSize; j < kernelSize; ++j) {
+              if (y + j < 0 || y + j >= height) continue;
+              for (i = 1 - kernelSize; i < kernelSize; ++i) {
+                if (x + i < 0 || x + i >= width) continue;
+                r += data[4 * ((y + j) * width + (x + i)) + 0] * kernel[Math.abs(j)][Math.abs(i)];
+                g += data[4 * ((y + j) * width + (x + i)) + 1] * kernel[Math.abs(j)][Math.abs(i)];
+                b += data[4 * ((y + j) * width + (x + i)) + 2] * kernel[Math.abs(j)][Math.abs(i)];
+                a += data[4 * ((y + j) * width + (x + i)) + 3] * kernel[Math.abs(j)][Math.abs(i)];
+              }
+            }
+            newData[4 * (y * width + x) + 0] = r / kernelSum;
+            newData[4 * (y * width + x) + 1] = g / kernelSum;
+            newData[4 * (y * width + x) + 2] = b / kernelSum;
+            newData[4 * (y * width + x) + 3] = a / kernelSum;               
+          }
+        }
+
+        return newData;
+      }
+ */
