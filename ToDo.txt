@@ -1,0 +1,6 @@
+tester.js:
+remove and replace pjs with c3dl
+get pde file
+
+tools/helper.html
+remove and replace pjs with c3dl. Can it be done?
