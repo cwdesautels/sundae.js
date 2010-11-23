@@ -5,10 +5,6 @@
     <title>c3dl Ref Tests</title>
     <script type="text/javascript" src="./c3dl/c3dapi.js" ></script>
     <script type="text/javascript" src="tests.js"></script>
-    <style>
-      .test  { border: solid 1px; margin: 5px; }
-      .title { margin-left: 5px; }
-    </style>
   </head>
   <body>
     <h1>c3dl Ref Test Runner</h1>
@@ -37,7 +33,7 @@
       var selectedTests = [];
       var total = document.getElementById('total');
       total.innerHTML = '';
-
+      var duck;
       updateSelectedTests();
 
       // Tolerance values and kernel for blur
@@ -47,14 +43,33 @@
       document.getElementById('epsilon').value = epsilon;
       var kernel, kernelSize, kernelSum;
       buildKernel();     
-
-      try {
-        // Opera createImageData fix
-        if (!("createImageData" in CanvasRenderingContext2D.prototype)) {
-          CanvasRenderingContext2D.prototype.createImageData = function(sw,sh) { return this.getImageData(0,0,sw,sh); }
+      
+      function canvasMain(canvasName){
+        alert("entering canvasMain");
+        // Create new c3dl.Scene object
+        scn = new c3dl.Scene();
+        scn.setCanvasTag(canvasName);
+        // Create GL context
+        renderer = new c3dl.WebGL();
+        renderer.createRenderer(this);
+        // Attach renderer to the scene
+        scn.setRenderer(renderer);
+        scn.init(canvasName);
+        if(renderer.isReady() ){
+          duck = new c3dl.Collada();
+          duck.init("./resources/duck.dae");
+          // Add the object to the scene
+          scn.addObjectToScene(duck);
+          // Create a camera
+          var cam = new c3dl.FreeCamera();
+          cam.setPosition(new Array(0, 0, -500.0));
+          cam.setLookAtPoint(new Array(0.0, 0.0, 0.0));
+          // Add the camera to the scene
+          scn.setCamera(cam);
+          scn.startScene();
         }
-      } catch(e) {}
-
+        alert("leaving canvasMain");
+      }
       function updateSelectedTests() {
         var selectControl = document.getElementById('test-type');
         var selectedTags = selectControl.value.split(',');
@@ -189,81 +204,51 @@
         }
 
         var runOne = function(i) {
-          var test = getTest(tests[i].path);
+          var path = getTest(tests[i].path);
+          var test = "t1_default";
           var result = document.createElement('div');
-          result.id = test.name;
+          result.id = test;
           var title = document.createElement('div');
           title.className = "title";
           result.appendChild(title);
           results.appendChild(result);
           var valueEpsilon = epsilon * 255;
 
-          if (test) {
-            var original = buildCanvas(test.name + '-original', test.width, test.height);
-            var current  = buildCanvas(test.name + '-current', test.width, test.height);
-            var diff     = buildCanvas(test.name + '-diff', test.width, test.height);
- 
-            result.appendChild(original);
-            result.appendChild(current);
-            result.appendChild(diff);
-            //toDo
-            //var pixelsLen = test.pixels.length;
+          var original = buildCanvas(test + '-original', 100, 100);
+          var current  = buildCanvas(test + '-current', 100, 100);
+          var diff     = buildCanvas(test + '-diff', 100, 100);
 
-            // draw the current version from code, timing it
-            var startTime = (new Date).getTime(), totalTime = 0;
-            var p;
-            try {
-              //ToDo: Adjust to store seperate tests in resources
-              c3dl.addMainCallBack(canvasMain, "current");
-              c3dl.addModel("./resources/duck.dae");
-              // The program main
-            } catch (e) {
-              title.innerHTML = titleText(i+1, tl, 0, test.name, "Processing failed: " + e.toString());
-              failedCount++;
-              return nextTest(i+1);
-            }
-            var totalTime = (new Date).getTime() - startTime; 
+          result.appendChild(original);
+          result.appendChild(current);
+          result.appendChild(diff);
+          // draw the original based on stored pixels
+          var origImg = new Image();
+          origImg.src = path;
+          var origCtx = original.getContext('2d');
+          origCtx.drawImage(origImg,0,0,100,100);
+          //toDo
+          //var pixelsLen = test.pixels.length;
 
-            // draw the original based on stored pixels
-            var origImg = new Image();
-            origImg.src = test;
-            var origCtx = original.getContext('2d');
-            origCtx.drawImage(origImg, 0,0,100,100);
-
-            // Blur pixels for diff
-            //blur(getPixels(origCtx, true), test.width, test.height);
-          } else {
-            title.innerHTML = titleText(i+1, tl, totalTime, test.name, "invalid test");
-            failedCount++;
+          // draw the current version from code, timing it
+          //var startTime = (new Date).getTime(), totalTime = 0;
+            //ToDo: Adjust to store seperate tests in resources
+          try{
+            alert("starting c3dl render");
+            c3dl.addMainCallBack(canvasMain, test + "-current");
+            c3dl.addModel("./resources/duck.dae");
+            alert("should be working");
           }
-          nextTest(i+1);
+          catch(e){
+            alert("exception thrown zomg");
+          }
+            // The program main
+          //var totalTime = (new Date).getTime() - startTime; 
+
+          // Blur pixels for diff
+          //blur(getPixels(origCtx, true), test.width, test.height);
+          //nextTest(i+1);
         };
         window.setTimeout(function() { runOne(0); }, 10);
-      }
-      var duck;
-      function canvasMain(canvasName){
-        // Create new c3dl.Scene object
-        scn = new c3dl.Scene();
-        scn.setCanvasTag(canvasName);
-        // Create GL context
-        renderer = new c3dl.WebGL();
-        renderer.createRenderer(this);
-        // Attach renderer to the scene
-        scn.setRenderer(renderer);
-        scn.init(canvasName);
-        if(renderer.isReady() ){
-          duck = new c3dl.Collada();
-          duck.init("./resources/duck.dae");
-          // Add the object to the scene
-          scn.addObjectToScene(duck);
-          // Create a camera
-          var cam = new c3dl.FreeCamera();
-          cam.setPosition(new Array(0, 0, -500.0));
-          cam.setLookAtPoint(new Array(0.0, 0.0, 0.0));
-          // Add the camera to the scene
-          scn.setCamera(cam);
-          scn.startScene();
-        }
       }
       function blur(data, width, height) {
         var len = data.length;
