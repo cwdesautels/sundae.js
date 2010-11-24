@@ -43,9 +43,8 @@
       document.getElementById('epsilon').value = epsilon;
       var kernel, kernelSize, kernelSum;
       buildKernel();     
-      
+            
       function canvasMain(canvasName){
-        alert("entering canvasMain");
         // Create new c3dl.Scene object
         scn = new c3dl.Scene();
         scn.setCanvasTag(canvasName);
@@ -68,7 +67,6 @@
           scn.setCamera(cam);
           scn.startScene();
         }
-        alert("leaving canvasMain");
       }
       function updateSelectedTests() {
         var selectControl = document.getElementById('test-type');
@@ -230,25 +228,25 @@
           //var pixelsLen = test.pixels.length;
 
           // draw the current version from code, timing it
-          //var startTime = (new Date).getTime(), totalTime = 0;
+          var startTime = (new Date).getTime(), totalTime = 0;
             //ToDo: Adjust to store seperate tests in resources
           try{
-            alert("starting c3dl render");
             c3dl.addMainCallBack(canvasMain, test + "-current");
             c3dl.addModel("./resources/duck.dae");
-            alert("should be working");
+            c3dl.init();
           }
           catch(e){
-            alert("exception thrown zomg");
+            alert("exception thrown zomg:" + e.toString());
           }
             // The program main
-          //var totalTime = (new Date).getTime() - startTime; 
+          var totalTime = (new Date).getTime() - startTime; 
 
           // Blur pixels for diff
-          //blur(getPixels(origCtx, true), test.width, test.height);
+          //blur(getPixels(origCtx, true), 100, 100);
           //nextTest(i+1);
         };
-        window.setTimeout(function() { runOne(0); }, 10);
+        runOne(0);
+        //window.setTimeout(function() { runOne(0); }, 10);
       }
       function blur(data, width, height) {
         var len = data.length;
