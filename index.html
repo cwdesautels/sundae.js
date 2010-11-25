@@ -240,7 +240,15 @@
           }
             // The program main
           var totalTime = (new Date).getTime() - startTime; 
-
+          var currCtx = current.getContext('2d');
+          var origImageData = origCtx.createImageData(100,100);
+          var currImageData = currCtx.createImageData(100,100);
+          
+          //var currPix = getPixels(current, true);
+          //var origPix = getPixels(original, true);
+          alert (origImageData.data);
+          alert (totalTime);
+          alert (currImageData.data);
           // Blur pixels for diff
           //blur(getPixels(origCtx, true), 100, 100);
           //nextTest(i+1);
