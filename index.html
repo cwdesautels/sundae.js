@@ -183,6 +183,7 @@
               
               return data;
             } else {
+              alert("this happened");
               return aCanvas.getContext('2d').getImageData(0, 0, aCanvas.width, aCanvas.height).data;
             }
           } catch (e) {
@@ -240,21 +241,20 @@
           }
             // The program main
           var totalTime = (new Date).getTime() - startTime; 
-          var currCtx = current.getContext('2d');
-          var origImageData = origCtx.createImageData(100,100);
-          var currImageData = currCtx.createImageData(100,100);
-          
-          //var currPix = getPixels(current, true);
-          //var origPix = getPixels(original, true);
-          alert (origImageData.data);
-          alert (totalTime);
-          alert (currImageData.data);
+          //var currCtx = current.getContext('2d');
+          //var origImageData = origCtx.createImageData(100,100);
+          //var currImageData = currCtx.createImageData(100,100);
+          var currPix = getPixels(current, true);          
+          var origPix = getPixels(original);
           // Blur pixels for diff
-          //blur(getPixels(origCtx, true), 100, 100);
-          //nextTest(i+1);
+          currPix = blur(currPix, 100, 100);
+          origPix = blur(origPix, 100, 100);
+          alert (currPix);
+          alert (origPix);
+          nextTest(i+1);
         };
-        runOne(0);
-        //window.setTimeout(function() { runOne(0); }, 10);
+        //runOne(0);
+        window.setTimeout(function() { runOne(0); }, 10);
       }
       function blur(data, width, height) {
         var len = data.length;
