@@ -166,27 +166,24 @@
               
               var data = null;
               try{
-                // try deprecated way first (keeps code cleaner)
-                data = context.readPixels(0, 0, aCanvas.width, aCanvas.height, context.RGBA, context.UNSIGNED_BYTE);
-              }catch(e){
-                // if that failed, try new way              
-                if(!data){
-                  data = new WebGLUnsignedByteArray(aCanvas.width * aCanvas.height * 4);
-                  context.readPixels(0, 0, aCanvas.width, aCanvas.height, context.RGBA, context.UNSIGNED_BYTE, data);
-                }
+                alert("trying");
+                data = context.readPixels(0, 0, 100, 100, context.RGBA, context.UNSIGNED_BYTE);
+                if(context.getError()){
+                  throw new Error("API has changed");                
+                }              
               }
-              
-              if(context.getError()){
-                  data = new WebGLUnsignedByteArray(aCanvas.width * aCanvas.height * 4);
-                  context.readPixels(0, 0, aCanvas.width, aCanvas.height, context.RGBA, context.UNSIGNED_BYTE, data);                
+              catch(e){
+                alert("extended parameter read");             
+                data = new Uint8Array(100 * 100 * 4);
+                context.readPixels(0, 0, 100, 100, context.RGBA, context.UNSIGNED_BYTE, data);
               }
-              
               return data;
             } else {
-              alert("this happened");
+              alert("2d shit");
               return aCanvas.getContext('2d').getImageData(0, 0, aCanvas.width, aCanvas.height).data;
             }
           } catch (e) {
+            alert("majorshitstorm");
             return null;
           }
         };
@@ -247,8 +244,8 @@
           var currPix = getPixels(current, true);          
           var origPix = getPixels(original);
           // Blur pixels for diff
-          currPix = blur(currPix, 100, 100);
-          origPix = blur(origPix, 100, 100);
+          //currPix = blur(currPix, 100, 100);
+          //origPix = blur(origPix, 100, 100);
           alert (currPix);
           alert (origPix);
           nextTest(i+1);
