@@ -151,7 +151,7 @@
         };
 
         var link = function(name) {
-          return '<a href="./resources/' + name + '">' + name + '</a>';
+          return '<a href="./resources/' + name + '.png">' + name + '</a>';
         };
 
         var titleText = function(testNumber, testTotal, time, testName, failMessage) {
@@ -166,24 +166,20 @@
               
               var data = null;
               try{
-                alert("trying");
                 data = context.readPixels(0, 0, 100, 100, context.RGBA, context.UNSIGNED_BYTE);
                 if(context.getError()){
                   throw new Error("API has changed");                
                 }              
               }
-              catch(e){
-                alert("extended parameter read");             
+              catch(e){             
                 data = new Uint8Array(100 * 100 * 4);
                 context.readPixels(0, 0, 100, 100, context.RGBA, context.UNSIGNED_BYTE, data);
               }
               return data;
             } else {
-              alert("2d shit");
               return aCanvas.getContext('2d').getImageData(0, 0, aCanvas.width, aCanvas.height).data;
             }
           } catch (e) {
-            alert("majorshitstorm");
             return null;
           }
         };
@@ -222,9 +218,6 @@
           origImg.src = path;
           var origCtx = original.getContext('2d');
           origCtx.drawImage(origImg,0,0,100,100);
-          //toDo
-          //var pixelsLen = test.pixels.length;
-
           // draw the current version from code, timing it
           var startTime = (new Date).getTime(), totalTime = 0;
             //ToDo: Adjust to store seperate tests in resources
@@ -236,21 +229,54 @@
           catch(e){
             alert("exception thrown zomg:" + e.toString());
           }
-            // The program main
+          // The program main
           var totalTime = (new Date).getTime() - startTime; 
-          //var currCtx = current.getContext('2d');
-          //var origImageData = origCtx.createImageData(100,100);
-          //var currImageData = currCtx.createImageData(100,100);
           var currPix = getPixels(current, true);          
           var origPix = getPixels(original);
           // Blur pixels for diff
           //currPix = blur(currPix, 100, 100);
           //origPix = blur(origPix, 100, 100);
-          alert (currPix);
-          alert (origPix);
+          if (!currPix) {
+            title.innerHTML = titleText(i+1, tl, totalTime, test, "can't diff pixels");
+            failedCount++;
+            return nextTest(i+1);
+          }
+          if (currPix.length == origPix.length) {
+            var diffCtx = diff.getContext('2d');
+            var diffData = diffCtx.createImageData(100, 100);
+            var tp = currPix;
+            var failed = false;
+            var pixelsLen = currPix.length;
+            for (var j=0; j < pixelsLen;) {
+              if (Math.abs(origPix[j] - tp[j]) < valueEpsilon  &&
+                  Math.abs(origPix[j + 1] - tp[j + 1]) < valueEpsilon &&
+                  Math.abs(origPix[j + 2] - tp[j + 2]) < valueEpsilon &&
+                  Math.abs(origPix[j + 3] - tp[j + 3]) < valueEpsilon)  {
+                diffData.data[j] = diffData.data[j+1] = diffData.data[j+2] = diffData.data[j+3] = 0;
+              } else {
+                diffData.data[j] = 255;
+                diffData.data[j+1] = diffData.data[j+2] = 0;
+                diffData.data[j+3] = 255;
+                failed = true;
+              }
+              j+=4;
+            }
+            if (failed) {
+              diffCtx.putImageData(diffData, 0, 0);
+              title.innerHTML = titleText(i+1, tl, totalTime, test, "pixels off");
+              failedCount++;
+            } else {
+              diffCtx.fillStyle = "rgb(0,255,0)";
+              diffCtx.fillRect (0, 0, diff.width, diff.height);
+              title.innerHTML = titleText(i+1, tl, totalTime, test);
+              passedCount++;
+            }
+          } else {
+            title.innerHTML = titleText(i+1, tl, totalTime, test, "size mismatch");
+            failedCount++;
+          }
           nextTest(i+1);
         };
-        //runOne(0);
         window.setTimeout(function() { runOne(0); }, 10);
       }
       function blur(data, width, height) {
