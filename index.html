@@ -37,7 +37,7 @@
       updateSelectedTests();
 
       // Tolerance values and kernel for blur
-      var sigma = 2; // radius
+      var sigma = 1; // radius
       document.getElementById('sigma').value = sigma;
       var epsilon = 0.05; // match accuracy ~5%
       document.getElementById('epsilon').value = epsilon;
@@ -214,10 +214,12 @@
           result.appendChild(current);
           result.appendChild(diff);
           // draw the original based on stored pixels
-          var origImg = new Image();
-          origImg.src = path;
           var origCtx = original.getContext('2d');
-          origCtx.drawImage(origImg,0,0,100,100);
+          var origImg = new Image();
+          origImg.onload = function(){
+            origCtx.drawImage(origImg,0,0,100,100);
+          }
+          origImg.src = path;
           // draw the current version from code, timing it
           var startTime = (new Date).getTime(), totalTime = 0;
             //ToDo: Adjust to store seperate tests in resources
@@ -227,15 +229,15 @@
             c3dl.init();
           }
           catch(e){
-            alert("exception thrown zomg:" + e.toString());
+            alert("failed to render c3dl canvas");
           }
           // The program main
           var totalTime = (new Date).getTime() - startTime; 
-          var currPix = getPixels(current, true);          
-          var origPix = getPixels(original);
+          var origPix = getPixels(original); 
+          var currPix = getPixels(current, true);         
           // Blur pixels for diff
-          //currPix = blur(currPix, 100, 100);
-          //origPix = blur(origPix, 100, 100);
+          currPix = blur(currPix, 100, 100);
+          origPix = blur(origPix, 100, 100);
           if (!currPix) {
             title.innerHTML = titleText(i+1, tl, totalTime, test, "can't diff pixels");
             failedCount++;
@@ -244,14 +246,14 @@
           if (currPix.length == origPix.length) {
             var diffCtx = diff.getContext('2d');
             var diffData = diffCtx.createImageData(100, 100);
-            var tp = currPix;
+            var tp = origPix;
             var failed = false;
             var pixelsLen = currPix.length;
             for (var j=0; j < pixelsLen;) {
-              if (Math.abs(origPix[j] - tp[j]) < valueEpsilon  &&
-                  Math.abs(origPix[j + 1] - tp[j + 1]) < valueEpsilon &&
-                  Math.abs(origPix[j + 2] - tp[j + 2]) < valueEpsilon &&
-                  Math.abs(origPix[j + 3] - tp[j + 3]) < valueEpsilon)  {
+              if (Math.abs(currPix[j] - tp[j]) < valueEpsilon  &&
+                  Math.abs(currPix[j + 1] - tp[j + 1]) < valueEpsilon &&
+                  Math.abs(currPix[j + 2] - tp[j + 2]) < valueEpsilon &&
+                  Math.abs(currPix[j + 3] - tp[j + 3]) < valueEpsilon)  {
                 diffData.data[j] = diffData.data[j+1] = diffData.data[j+2] = diffData.data[j+3] = 0;
               } else {
                 diffData.data[j] = 255;
