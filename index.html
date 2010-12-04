@@ -30,6 +30,7 @@
     <div id="total">
     </div>
     <script>
+      var path = "./resources/";
       var selectedTests = [];
       var total = document.getElementById('total');
       total.innerHTML = '';
@@ -42,32 +43,8 @@
       var epsilon = 0.05; // match accuracy ~5%
       document.getElementById('epsilon').value = epsilon;
       var kernel, kernelSize, kernelSum;
-      buildKernel();     
-            
-      function canvasMain(canvasName){
-        // Create new c3dl.Scene object
-        scn = new c3dl.Scene();
-        scn.setCanvasTag(canvasName);
-        // Create GL context
-        renderer = new c3dl.WebGL();
-        renderer.createRenderer(this);
-        // Attach renderer to the scene
-        scn.setRenderer(renderer);
-        scn.init(canvasName);
-        if(renderer.isReady() ){
-          duck = new c3dl.Collada();
-          duck.init("./resources/duck.dae");
-          // Add the object to the scene
-          scn.addObjectToScene(duck);
-          // Create a camera
-          var cam = new c3dl.FreeCamera();
-          cam.setPosition(new Array(0, 0, -500.0));
-          cam.setLookAtPoint(new Array(0.0, 0.0, 0.0));
-          // Add the camera to the scene
-          scn.setCamera(cam);
-          scn.startScene();
-        }
-      }
+      buildKernel();
+    
       function updateSelectedTests() {
         var selectControl = document.getElementById('test-type');
         var selectedTags = selectControl.value.split(',');
@@ -128,11 +105,6 @@
         var newE = document.getElementById('epsilon').value;
         if (newE)
           epsilon = parseFloat(newE);
-      }
-
-      function getTest(testName) {
-        testName || null;
-        return testName;
       }
 
       function runTests(tests) {
@@ -196,8 +168,9 @@
         }
 
         var runOne = function(i) {
-          var path = getTest(tests[i].path);
-          var test = "t1_default";
+          var test = tests[i].name || null;
+          var mdl = tests[i].model || null;
+          
           var result = document.createElement('div');
           result.id = test;
           var title = document.createElement('div');
@@ -205,76 +178,85 @@
           result.appendChild(title);
           results.appendChild(result);
           var valueEpsilon = epsilon * 255;
+  
+          if(test){
+            var imgPath = path + test + ".png";
+            var mdlPath = path + mdl + ".dae";
+          
+            var original = buildCanvas(test + '-original', 100, 100);
+            var current  = buildCanvas(test + '-current', 100, 100);
+            var diff     = buildCanvas(test + '-diff', 100, 100);
 
-          var original = buildCanvas(test + '-original', 100, 100);
-          var current  = buildCanvas(test + '-current', 100, 100);
-          var diff     = buildCanvas(test + '-diff', 100, 100);
-
-          result.appendChild(original);
-          result.appendChild(current);
-          result.appendChild(diff);
-          // draw the original based on stored pixels
-          var origCtx = original.getContext('2d');
-          var origImg = new Image();
-          origImg.onload = function(){
-            origCtx.drawImage(origImg,0,0,100,100);
-          }
-          origImg.src = path;
-          // draw the current version from code, timing it
-          var startTime = (new Date).getTime(), totalTime = 0;
-            //ToDo: Adjust to store seperate tests in resources
-          try{
-            c3dl.addMainCallBack(canvasMain, test + "-current");
-            c3dl.addModel("./resources/duck.dae");
-            c3dl.init();
-          }
-          catch(e){
-            alert("failed to render c3dl canvas");
-          }
-          // The program main
-          var totalTime = (new Date).getTime() - startTime; 
-          var origPix = getPixels(original); 
-          var currPix = getPixels(current, true);         
-          // Blur pixels for diff
-          currPix = blur(currPix, 100, 100);
-          origPix = blur(origPix, 100, 100);
-          if (!currPix) {
-            title.innerHTML = titleText(i+1, tl, totalTime, test, "can't diff pixels");
-            failedCount++;
-            return nextTest(i+1);
-          }
-          if (currPix.length == origPix.length) {
-            var diffCtx = diff.getContext('2d');
-            var diffData = diffCtx.createImageData(100, 100);
-            var tp = origPix;
-            var failed = false;
-            var pixelsLen = currPix.length;
-            for (var j=0; j < pixelsLen;) {
-              if (Math.abs(currPix[j] - tp[j]) < valueEpsilon  &&
-                  Math.abs(currPix[j + 1] - tp[j + 1]) < valueEpsilon &&
-                  Math.abs(currPix[j + 2] - tp[j + 2]) < valueEpsilon &&
-                  Math.abs(currPix[j + 3] - tp[j + 3]) < valueEpsilon)  {
-                diffData.data[j] = diffData.data[j+1] = diffData.data[j+2] = diffData.data[j+3] = 0;
-              } else {
-                diffData.data[j] = 255;
-                diffData.data[j+1] = diffData.data[j+2] = 0;
-                diffData.data[j+3] = 255;
-                failed = true;
-              }
-              j+=4;
+            result.appendChild(original);
+            result.appendChild(current);
+            result.appendChild(diff);
+            // draw the original based on stored pixels
+            var origCtx = original.getContext('2d');
+            var origImg = new Image();
+            origImg.onload = function(){
+              origCtx.drawImage(origImg,0,0,100,100);
             }
-            if (failed) {
-              diffCtx.putImageData(diffData, 0, 0);
-              title.innerHTML = titleText(i+1, tl, totalTime, test, "pixels off");
+            origImg.src = imgPath;
+            // draw the current version from code, timing it
+            var startTime = (new Date).getTime(), totalTime = 0;
+            try{
+              c3dl.addMainCallBack(testFuncs[test], test + "-current");
+              c3dl.addModel(mdlPath);
+              c3dl.init();
+            }
+            catch(e){
+              title.innerHTML = titleText(i+1, tl, totalTime, test, "can't render c3dl canvas");
               failedCount++;
+              return nextTest(i+1);
+            }
+            // The program main
+            var totalTime = (new Date).getTime() - startTime; 
+            var origPix = getPixels(original); 
+            var currPix = getPixels(current, true);         
+            // Blur pixels for diff
+            currPix = blur(currPix, 100, 100);
+            origPix = blur(origPix, 100, 100);
+            if (!currPix) {
+              title.innerHTML = titleText(i+1, tl, totalTime, test, "can't diff pixels");
+              failedCount++;
+              return nextTest(i+1);
+            }
+            if (currPix.length == origPix.length) {
+              var diffCtx = diff.getContext('2d');
+              var diffData = diffCtx.createImageData(100, 100);
+              var tp = origPix;
+              var failed = false;
+              var pixelsLen = currPix.length;
+              for (var j=0; j < pixelsLen;) {
+                if (Math.abs(currPix[j] - tp[j]) < valueEpsilon  &&
+                    Math.abs(currPix[j + 1] - tp[j + 1]) < valueEpsilon &&
+                    Math.abs(currPix[j + 2] - tp[j + 2]) < valueEpsilon &&
+                    Math.abs(currPix[j + 3] - tp[j + 3]) < valueEpsilon)  {
+                  diffData.data[j] = diffData.data[j+1] = diffData.data[j+2] = diffData.data[j+3] = 0;
+                } else {
+                  diffData.data[j] = 255;
+                  diffData.data[j+1] = diffData.data[j+2] = 0;
+                  diffData.data[j+3] = 255;
+                  failed = true;
+                }
+                j+=4;
+              }
+              if (failed) {
+                diffCtx.putImageData(diffData, 0, 0);
+                title.innerHTML = titleText(i+1, tl, totalTime, test, "pixels off");
+                failedCount++;
+              } else {
+                diffCtx.fillStyle = "rgb(0,255,0)";
+                diffCtx.fillRect (0, 0, diff.width, diff.height);
+                title.innerHTML = titleText(i+1, tl, totalTime, test);
+                passedCount++;
+              }
             } else {
-              diffCtx.fillStyle = "rgb(0,255,0)";
-              diffCtx.fillRect (0, 0, diff.width, diff.height);
-              title.innerHTML = titleText(i+1, tl, totalTime, test);
-              passedCount++;
+              title.innerHTML = titleText(i+1, tl, totalTime, test, "size mismatch");
+              failedCount++;
             }
           } else {
-            title.innerHTML = titleText(i+1, tl, totalTime, test, "size mismatch");
+            title.innerHTML = titleText(i+1, tl, totalTime, test.name, "invalid test");
             failedCount++;
           }
           nextTest(i+1);
