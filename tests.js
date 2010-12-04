@@ -36,7 +36,7 @@ var testFuncs = {
     if(renderer.isReady() ){
       duck = new c3dl.Collada();
       duck.init("./resources/duck.dae");
-      duck.roll(180)
+      duck.roll(180); //radians
       scn.addObjectToScene(duck);
       var cam = new c3dl.FreeCamera();
       cam.setPosition(new Array(0, 0, -500.0));

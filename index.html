@@ -194,7 +194,7 @@
             var origCtx = original.getContext('2d');
             var origImg = new Image();
             origImg.onload = function(){
-              origCtx.drawImage(origImg,0,0,100,100);
+              origCtx.drawImage(origImg,0,0,origImg.width,origImg.height);
             }
             origImg.src = imgPath;
             // draw the current version from code, timing it
@@ -214,8 +214,8 @@
             var origPix = getPixels(original); 
             var currPix = getPixels(current, true);         
             // Blur pixels for diff
-            currPix = blur(currPix, 100, 100);
-            origPix = blur(origPix, 100, 100);
+            currPix = blur(currPix, current.width, current.height);
+            origPix = blur(origPix, original.width, original.height);
             if (!currPix) {
               title.innerHTML = titleText(i+1, tl, totalTime, test, "can't diff pixels");
               failedCount++;
@@ -223,7 +223,7 @@
             }
             if (currPix.length == origPix.length) {
               var diffCtx = diff.getContext('2d');
-              var diffData = diffCtx.createImageData(100, 100);
+              var diffData = diffCtx.createImageData(diff.width, diff.height);
               var tp = origPix;
               var failed = false;
               var pixelsLen = currPix.length;
