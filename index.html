@@ -164,6 +164,7 @@
             var info = "Tests Completed - " + failedCount + " failed, " + passedCount + " passed, " + (failedCount + passedCount) + " total."
             document.getElementById('status').innerHTML = info;
             total.innerHTML = info;
+            c3dl.init();
           }
         }
 
@@ -202,7 +203,6 @@
             try{
               c3dl.addMainCallBack(testFuncs[test], test + "-current");
               c3dl.addModel(mdlPath);
-              c3dl.init();
             }
             catch(e){
               title.innerHTML = titleText(i+1, tl, totalTime, test, "can't render c3dl canvas");
