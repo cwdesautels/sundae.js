@@ -210,11 +210,10 @@
               return nextTest(i+1);
             }
             // The program main
-            var totalTime = (new Date).getTime() - startTime; 
             var origPix = getPixels(original); 
             var currPix = getPixels(current, true);         
             // Blur pixels for diff
-            currPix = blur(currPix, current.width, current.height);
+            currPix = blur(currPix, current.width, current.height); 
             origPix = blur(origPix, original.width, original.height);
             if (!currPix) {
               title.innerHTML = titleText(i+1, tl, totalTime, test, "can't diff pixels");
@@ -241,6 +240,7 @@
                 }
                 j+=4;
               }
+              var totalTime = (new Date).getTime() - startTime;
               if (failed) {
                 diffCtx.putImageData(diffData, 0, 0);
                 title.innerHTML = titleText(i+1, tl, totalTime, test, "pixels off");
