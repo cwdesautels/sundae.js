@@ -13,7 +13,7 @@ var tests = [
   { name: "t9_cameraY", model: "duck", tags: ["Static"] },
   { name: "t10_cameraZ", model: "duck", tags: ["Static"] },
   { name: "t11_scaleUp", model: "duck", tags: ["Static"] },
-  { name: "t12_scaleDown", model: "duck", tags: ["Static"] },
+  { name: "t12_scaleDown", model: "duck", tags: ["Static"] }
 ];
 
 //TEST FUNCTIONS HERE
@@ -287,5 +287,5 @@ var testFuncs = {
       scn.setCamera(cam);
       scn.startScene();
     }
-  },
+  }
 }

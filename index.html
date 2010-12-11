@@ -108,6 +108,8 @@
       }
 
       function runTests(tests) {
+        var _tests = [];
+        var _test = {curr: {}, orig: {}, diff: {}};
         var results = document.getElementById('results');
         results.innerHTML = '<div id="status" style="margin-bottom: 10px;">Running... (this may take some time)</div>';
         var total = document.getElementById('total');
@@ -157,14 +159,13 @@
         };
 
         var passedCount = 0, failedCount = 0, tl = tests.length;
-        function nextTest(testNum) {
+        var nextTest = function(testNum) {
           if (testNum < tl) {
             window.setTimeout(function() { runOne(testNum); }, 10);
           } else {
             var info = "Tests Completed - " + failedCount + " failed, " + passedCount + " passed, " + (failedCount + passedCount) + " total."
             document.getElementById('status').innerHTML = info;
             total.innerHTML = info;
-            c3dl.init();
           }
         }
 
@@ -209,6 +210,7 @@
               failedCount++;
               return nextTest(i+1);
             }
+            var totalTime = (new Date).getTime() - startTime;
             // The program main
             var origPix = getPixels(original); 
             var currPix = getPixels(current, true);         
@@ -240,7 +242,6 @@
                 }
                 j+=4;
               }
-              var totalTime = (new Date).getTime() - startTime;
               if (failed) {
                 diffCtx.putImageData(diffData, 0, 0);
                 title.innerHTML = titleText(i+1, tl, totalTime, test, "pixels off");
@@ -262,6 +263,44 @@
           nextTest(i+1);
         };
         window.setTimeout(function() { runOne(0); }, 10);
+        //try{c3dl.init();}catch(e){}//unforseen c3dl bug catching
+        //runCompare(_tests);
+        var runCompare = function(_tests){
+          if(_tests){
+            for(var i = 0, rc = false, len = _tests.length; i < len; i++, rc = false){
+              if(_tests[i].curr && _tests[i].orig){
+                if(rc = compare(_tests[i].orig, _tests[i].curr, _tests[i].diff)){
+                  //successful test code here
+                }
+                else{
+                  //failed test code here
+                }
+              }
+              else{
+                if(_tests[i].curr){
+                  //orignal canvas is null
+                }
+                else{
+                  //current canvas is null
+                }
+              }
+            }
+          }
+          else{
+            //no tests
+          }
+        }
+        var compare = function(_a,_b,_c){
+          //getpixels a
+          //getpixels b
+          //blur a
+          //blur b
+          //compare
+          //spit result onto c
+          //return result boolean
+          rc = false;
+          return rc;
+        }
       }
       function blur(data, width, height) {
         var len = data.length;
