@@ -264,7 +264,7 @@
         };
         window.setTimeout(function() { runOne(0); }, 10);
         //try{c3dl.init();}catch(e){}//unforseen c3dl bug catching
-        //runCompare(_tests);
+        //runCompare(tests);
         var runCompare = function(_tests){
           if(_tests){
             for(var i = 0, rc = false, len = _tests.length; i < len; i++, rc = false){
@@ -290,6 +290,7 @@
             //no tests
           }
         }
+        //Takes 3 canvases, compare _a to _b putting the result in _c
         var compare = function(_a,_b,_c){
           //getpixels a
           //getpixels b
