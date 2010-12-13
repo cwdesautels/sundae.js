@@ -34,7 +34,6 @@
       var selectedTests = [];
       var total = document.getElementById('total');
       total.innerHTML = '';
-      var duck;
       updateSelectedTests();
 
       // Tolerance values and kernel for blur
@@ -108,12 +107,24 @@
       }
 
       function runTests(tests) {
+        var passedCount = 0, failedCount = 0, tl = tests.length;
         var _tests = [];
-        var _test = {curr: {}, orig: {}, diff: {}};
         var results = document.getElementById('results');
         results.innerHTML = '<div id="status" style="margin-bottom: 10px;">Running... (this may take some time)</div>';
         var total = document.getElementById('total');
         total.innerHTML = '';
+        (function(){
+          Test.prototype.result = document.createElement('div');
+          Test.prototype.title = document.createElement('div');
+          Test.prototype.title.className = "title";
+          Test.prototype.orig = {};
+          Test.prototype.curr = {};
+          Test.prototype.diff = {};
+          Test.prototype.time = 0;
+          Test.prototype.name = "";
+          Test.prototype.mdlPath = "";
+          Test.prototype.imgPath = "";
+        })();
 
         var buildCanvas = function(id, w, h) {
           var c = document.createElement('canvas');
@@ -158,8 +169,7 @@
           }
         };
 
-        var passedCount = 0, failedCount = 0, tl = tests.length;
-        var nextTest = function(testNum) {
+        /*var nextTest = function(testNum) {
           if (testNum < tl) {
             window.setTimeout(function() { runOne(testNum); }, 10);
           } else {
@@ -167,9 +177,9 @@
             document.getElementById('status').innerHTML = info;
             total.innerHTML = info;
           }
-        }
+        }*/
 
-        var runOne = function(i) {
+        /*var runOne = function(i) {
           var test = tests[i].name || null;
           var mdl = tests[i].model || null;
           
@@ -263,44 +273,141 @@
           nextTest(i+1);
         };
         window.setTimeout(function() { runOne(0); }, 10);
+        */
+        //
+        var refTests = createTests(selectedTests);
         //try{c3dl.init();}catch(e){}//unforseen c3dl bug catching
-        //runCompare(tests);
-        var runCompare = function(_tests){
+        c3dl.init();
+        runCompare(refTests);
+        
+        var info = "Tests Completed - " + failedCount + " failed, " + passedCount + " passed, " + (failedCount + passedCount) + " total."
+        document.getElementById('status').innerHTML = info;
+        total.innerHTML = info;
+        
+        function Test(_test){
+          this.name = _test.name
+          this.mdlPath = path + _test.model + ".dae";
+          this.imgPath = path + _test.name + ".png"
+          this.result.appendChild(this.title);
+          return this;
+        }
+        function createTests(selectedTests){
+          var len = selectedTests.length;
+          var _tests = new Array();
+          for(var i = 0; i < len; i++){
+            _tests.push(new Test(selectedTests[i]));
+          }
+          return buildTests(_tests);
+        }
+        function buildTests(_tests){
+          var len = _tests.length;
+          for(var i = 0; i < len; i++){
+            _tests[i].result.id = _tests[i].name;
+            _tests[i].orig = buildCanvas(_tests[i].name + '-original', 100, 100);
+            _tests[i].curr = buildCanvas(_tests[i].name + '-current', 100, 100);
+            _tests[i].diff = buildCanvas(_tests[i].name + '-diff', 100, 100);
+            _tests[i].result.appendChild(_tests[i].orig);
+            _tests[i].result.appendChild(_tests[i].curr);
+            _tests[i].result.appendChild(_tests[i].diff);
+            results.appendChild(_tests[i].result);
+          }
+          return fillCanvases(_tests);          
+        }
+        function fillCanvases(_tests){
+          if(_tests){
+            var len = _tests.length;
+            for(var i = 0; i < len; i++){
+              inject_png(_tests[i].orig, _tests[i].imgPath);
+              _tests[i].time = inject_c3dl(_tests[i].curr, _tests[i].main, _tests[i].mdlPath);
+            }
+          }
+          return _tests;
+        }
+        function runCompare(_tests){
           if(_tests){
             for(var i = 0, rc = false, len = _tests.length; i < len; i++, rc = false){
               if(_tests[i].curr && _tests[i].orig){
-                if(rc = compare(_tests[i].orig, _tests[i].curr, _tests[i].diff)){
-                  //successful test code here
+                if(rc = compare(_tests[i].orig, false, _tests[i].curr, true, _tests[i].diff)){
+                  _tests[i].title.innerHTML = titleText(i+1, tl, _tests[i].time, _tests[i].name);
+                  passedCount++;
                 }
                 else{
-                  //failed test code here
+                  _tests[i].title.innerHTML = titleText(i+1, tl, _tests[i].time, _tests[i].name, "pixels off");
+                  failedCount++;
                 }
               }
               else{
-                if(_tests[i].curr){
-                  //orignal canvas is null
-                }
-                else{
-                  //current canvas is null
-                }
+                _tests[i].title.innerHTML = titleText(i+1, tl, _tests[i].time, _tests[i].name, "invalid test");
+                failedCount++;
               }
             }
           }
           else{
-            //no tests
+            _tests[i].title.innerHTML = titleText(i+1, tl, _tests[i].time, _tests[i].name, "no tests");
           }
         }
         //Takes 3 canvases, compare _a to _b putting the result in _c
-        var compare = function(_a,_b,_c){
-          //getpixels a
-          //getpixels b
-          //blur a
-          //blur b
-          //compare
-          //spit result onto c
+        function compare(_a, _aWebGL, _b, _bWebGL, _c){
+          var rc = true;
+          var valueEpsilon = epsilon * 255;
+          //Get pixel arrays from canvases
+          var _aPix = getPixels(_a, _aWebGL); 
+          var _bPix = getPixels(_b, _bWebGL);
+          //Blur pixel arrays
+          _aPix = blur(_aPix, _aPix.width, _aPix.height); 
+          _bPix = blur(_bPix, _bPix.width, _bPix.height);
+          if(_aPix.length === _bPix.length){
+            //Compare pixel arrays
+            var _cCtx = _c.getContext('2d');
+            var _cPix = _cCtx.createImageData(_c.width, _c.height);
+            var len = _bPix.length;
+            for (var j=0; j < len; j+=4){
+              if (Math.abs(_bPix[j] - _aPix[j]) < valueEpsilon  &&
+                  Math.abs(_bPix[j + 1] - _aPix[j + 1]) < valueEpsilon &&
+                  Math.abs(_bPix[j + 2] - _aPix[j + 2]) < valueEpsilon &&
+                  Math.abs(_bPix[j + 3] - _aPix[j + 3]) < valueEpsilon){
+                _cPix.data[j] = _cPix.data[j+1] = _cPix.data[j+2] = _cPix.data[j+3] = 0;
+              } //Pixel difference in _c
+              else{
+                _cPix.data[j] = 255;
+                _cPix.data[j+1] = _cPix.data[j+2] = 0;
+                _cPix.data[j+3] = 255;
+                rc = false;
+              }
+            }
+            //Display pixel difference in _c
+            if(rc){
+              _cCtx.fillStyle = "rgb(0,255,0)";
+              _cCtx.fillRect (0, 0, _c.width, _c.height);
+            }
+            else{
+              _cCtx.putImageData(_cPix, 0, 0);
+            }
+          }
+          else{
+            rc = false;
+          }
           //return result boolean
-          rc = false;
           return rc;
+        }
+      }
+      function inject_c3dl(_aCanvas, _main, _path){
+        var startTime = (new Date).getTime(), totalTime = 0;
+        if(_aCanvas && _main && _path){
+          c3dl.addMainCallBack(_main, _aCanvas);
+          c3dl.addModel(_path);
+        }
+        totalTime = (new Date).getTime() - startTime;
+        return totalTime;
+      }
+      function inject_png(_aCanvas, _path){
+        if(_aCanvas && _path){
+          var _ctx = _aCanvas.getContext('2d');
+          var _img = new Image();
+          _img.onload = function(){
+            _ctx.drawImage(_img,0,0,_img.width,_img.height);
+          }
+          _img.src = _path;         
         }
       }
       function blur(data, width, height) {
