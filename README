@@ -2,14 +2,11 @@
 
 C3DL test suite.
 
-== Project Description ==
-
-Create and implement an automated test suite which compares C3DL still frame render demos and a still frame pictures. Additional innovation will be required for the implementation of moving C3DL demos.
-
 == Project Leader(s) ==
 
 Andor Salga
 Catherine Leung
+David Humphrey
 
 == Project Contributor(s) ==
 
@@ -20,27 +17,39 @@ Peter Leaning
 
 == Project Details ==
 
-The project will require the initial step of porting Processing.js automated test suite created by David Humphrey. That will produce a framework for which the C3DL demos can be added. The framework will need to be tailored for the project needs, such as: moving demos need to be integrated, replacing Processing.js still frame demos with C3DL ones.
+Create an easy to implement multi platform framework with the intent to compare webGL canvases and/or webGL buffers with known good or known bad results. Additionally the focus will be on webGL functionality relevant to c3dl, and c3dl rendered canvases.
 
 == Project Plan ==
 
-Goals for each release:
-* 0.1: 
-** Port Davids code
-** Integrate a C3DL demo
-** Archive with git and github
-** Integrate github with C3DL dev team
-* 0.2: 
-** Integrate all still C3DL still demos
-** Streamline automation to developers needs
-** Attempt method of including moving demos
-* 0.3:
-** Fully integrate existing moving C3DL demos
-** Attempt personal demo.
+0.4
+- Clearly identify the test process, and approach
+- Rewrite framework defining and separating the testing sequence
+- Update readPixels()
+- Confirm pixel comparison and blur() actually work
+0.5
+- Implement howto test webGL fundamentals. Both rendered and buffered objects.
+- Develop relevant webGL test cases
+- Break c3dl tests into more fundamental tests. Isolating very specific objects.
+0.6
+- Port test cases into their own files
+- Implement importing test case files
+- Define rigid organizational structure, directory and tag based import system.
+0.7
+- Enhance optimization with worker threads
+- Identify locations for multiple threads and strategy of use
+- Implement multi thread support
+0.8
+- Implement Windows operating system support with all browsers
+- Implement relevant webGL test cases for Windows and specific browsers, including known fails.
+0.9
+- Implement Apple operating system support with all browsers
+- Implement relevant webGL test cases for Apple and specific browsers, including known fails.
+1.0
+- Implement Linux operating system support with all browsers
+- Implement relevant webGL test cases for Linux and specific browser, including known fails.
+- Polish code logic: remove unnecessary runtime
 
 == Project News ==
 
 * C3DL lighthouse
 ** http://c3dl.lighthouseapp.com/dashboard
-* Processing.js Repo
-** http://github.com/annasob/processing-js
