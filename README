@@ -26,28 +26,6 @@ Create an easy to implement multi platform framework with the intent to compare 
 - Rewrite framework defining and separating the testing sequence
 - Update readPixels()
 - Confirm pixel comparison and blur() actually work
-0.5
-- Implement howto test webGL fundamentals. Both rendered and buffered objects.
-- Develop relevant webGL test cases
-- Break c3dl tests into more fundamental tests. Isolating very specific objects.
-0.6
-- Port test cases into their own files
-- Implement importing test case files
-- Define rigid organizational structure, directory and tag based import system.
-0.7
-- Enhance optimization with worker threads
-- Identify locations for multiple threads and strategy of use
-- Implement multi thread support
-0.8
-- Implement Windows operating system support with all browsers
-- Implement relevant webGL test cases for Windows and specific browsers, including known fails.
-0.9
-- Implement Apple operating system support with all browsers
-- Implement relevant webGL test cases for Apple and specific browsers, including known fails.
-1.0
-- Implement Linux operating system support with all browsers
-- Implement relevant webGL test cases for Linux and specific browser, including known fails.
-- Polish code logic: remove unnecessary runtime
 
 == Project News ==
 

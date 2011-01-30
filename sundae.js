@@ -33,60 +33,57 @@ var sundae = {};
         setupBody();
         getTests();     
     };
-    function injestCurr(aCanvas, test){
-        var startTime = (new Date).getTime(), totalTime = 0;
-        try{
-            test.body.run(aCanvas);
-        }
-        catch(e){
-            throw (new error("Failed to render test"));
-        }
-        totalTime = (new Date).getTime() - startTime;
-        if(test.expectedTime){
-            if(totalTime > test.expectedTime){
-                throw (new error("Failed: " + (totalTime - test.expectedTime) + "ms Too long"));
-            }
-        }
-        return totalTime;
-    }
-    function injectOrig(aCanvas, url){
-        if(url){
-            try{
-                var ctx = aCanvas.getContext("2d");
-                var img = new Image();
-                img.onload = function(){
-                    ctx.drawImage(img, 0, 0, img.width, img.height);
-                }
-                img.src = url;
-            }
-            catch(e){
-                throw (new error("Failed to load reference"));
-            }
-        }
-        else{
-            throw (new error("No reference"));
-        }
+    function reportResult(r,t){
+        r.innerHTML = (" [" + t + "ms]");
     }
     function setupTest(test){
         var name = test.name || "default";
         var d = createDiv(_w.document.getElementById("sundae"), name);
+        var r = createDiv(d, name + "-title");
         var a = createCanvas(d, name + "-orig", 100, 100);
         var b = createCanvas(d, name + "-curr", 100, 100);
         var c = createCanvas(d, name + "-diff", 100, 100);
         var t = 0;
-        try{
-            injectOrig(a, test.referenceImageURL);
-            t = injectCurr(b);
-        }
-        catch(e){
-            alert(e.name);
-            alert(e.message);
-        }
+        var injectCurr = function(aCanvas, run){
+            var startTime = (new Date).getTime(), totalTime = 0;
+            //try{
+                run(aCanvas);
+            //}
+            //catch(e){
+            //    throw (new error("Failed to render test"));
+            //}
+            return (new Date).getTime() - startTime;
+        };
+        var injectOrig = function(aCanvas, url){
+            //if(url){
+                var ctx = aCanvas.getContext("2d");
+                var img = new Image();
+                img.onload = function(){
+                    ctx.drawImage(img, 0, 0, img.width, img.height);
+                    t = injectCurr(b, test.body.run);
+                    compare(a, b, c);
+                    reportResult(r,t,e);
+                }
+                img.src = url;
+            //}
+                //catch(e){
+                //    throw (new error("Failed to load reference"));
+                //}
+            //else{
+            //    var ctx = aCanvas.getContext("experimental-webgl");
+            //    ctx.clearColor(0, 0, 0, 1);
+            //    ctx.clear(ctx.COLOR_BUFFER_BIT);
+            //
+            //}
+        };
+        //Fill Canvases
+        injectOrig(a, test.referenceImageURL);
     }
     function createDiv(parent, id){
         var d = _w.document.createElement("div");
         d.id = id;
-        d.style = "margin: 5px; padding-top: 10px;";
+        //Not working
+        //d.style = "margin: 5px; padding-top: 10px;";
         parent.appendChild(d);
         return d;
     }
@@ -108,19 +105,20 @@ var sundae = {};
                 for(var i = 0, sl = _testSuite.length; i < sl; i++){
                     if(_testSuite[i].test){
                         for(var j = 0, tl = _testSuite[i].test.length; j < tl; j++){
-                            var test = _testSuite[i].test[j];
-                            var loadedStatus = false;
-                            if(_testSuite[i].test[j].dependancyURL){
-                                for(var m = 0, dl = _testSuite[i].test[j].dependancyURL.length; m < dl; m++){
-                                    getScript(_testSuite[i].test[j].dependancyURL[m], 
-                                        function(){
-                                            if(m == dl && loadedStatus == false){
-                                                loadedStatus = true;
-                                                setupTest(test);
-                                            }
-                                        }
+                            if(_testSuite[i].test[j].dependancyURL){//starting of sync nightmare
+                                //for(var m = 0, dl = _testSuite[i].test[j].dependancyURL.length; m < dl; m++){
+                                    //getScript(_testSuite[i].test[j].dependancyURL[m],
+                                    getScript(_testSuite[i].test[j].dependancyURL,
+                                        function(_test){
+                                            var test = _test;
+                                            //This async code is breaking my brain
+                                            return function(){setupTest(test);};
+                                        }(_testSuite[i].test[j])
                                     );
-                                }
+                                //}
+                            }
+                            else{
+                                setupTest(_testSuite[i].test[j]);
                             }
                         }
                     }
@@ -149,14 +147,19 @@ var sundae = {};
                 var context = aCanvas.getContext("experimental-webgl");  
                 var data = null;
                 try{
-                    data = context.readPixels(0, 0, 100, 100, context.RGBA, context.UNSIGNED_BYTE);
+                    // try deprecated way first 
+                    data = context.readPixels(0, 0, aCanvas.width, aCanvas.height, context.RGBA, context.UNSIGNED_BYTE);
+                    // Chrome posts an error
                     if(context.getError()){
                         throw new Error("API has changed");                
                     }              
                 }
-                catch(e){             
-                    data = new Uint8Array(100 * 100 * 4);
-                    context.readPixels(0, 0, 100, 100, context.RGBA, context.UNSIGNED_BYTE, data);
+                catch(e){
+                    // if that failed, try new way
+                    if(!data){             
+                        data = new Uint8Array(aCanvas.width * aCanvas.height * 4);
+                        context.readPixels(0, 0, aCanvas.width, aCanvas.height, context.RGBA, context.UNSIGNED_BYTE, data);
+                    }
                 }
                 return data;
             } 
@@ -168,47 +171,46 @@ var sundae = {};
             return null;
         }
     }
-    function compare(_a, _aWebGL, _b, _bWebGL, _c){
-        var rc = true;
+    function compare(a, b, c){
+        var failed = false;
         var valueEpsilon = _epsilon * 255;
         //Get pixel arrays from canvases
-        var _aPix = getPixels(_a, _aWebGL); 
-        var _bPix = getPixels(_b, _bWebGL);
+        var aPix = getPixels(a, false); 
+        var bPix = getPixels(b, true);
         //Blur pixel arrays
-        _aPix = blur(_aPix, _aPix.width, _aPix.height); 
-        _bPix = blur(_bPix, _bPix.width, _bPix.height);
-        if(_aPix.length === _bPix.length){
+        //aPix = blur(aPix, aPix.width, aPix.height); 
+        //bPix = blur(bPix, bPix.width, bPix.height);
+        if(aPix.length === bPix.length){
             //Compare pixel arrays
-            var _cCtx = _c.getContext('2d');
-            var _cPix = _cCtx.createImageData(_c.width, _c.height);
-            var len = _bPix.length;
+            var cCtx = c.getContext('2d');
+            var cPix = cCtx.createImageData(c.width, c.height);
+            var len = bPix.length;
             for (var j=0; j < len; j+=4){
-                if (Math.abs(_bPix[j] - _aPix[j]) < valueEpsilon  &&
-                    Math.abs(_bPix[j + 1] - _aPix[j + 1]) < valueEpsilon &&
-                    Math.abs(_bPix[j + 2] - _aPix[j + 2]) < valueEpsilon &&
-                    Math.abs(_bPix[j + 3] - _aPix[j + 3]) < valueEpsilon){
-                    _cPix.data[j] = _cPix.data[j+1] = _cPix.data[j+2] = _cPix.data[j+3] = 0;
-                } //Pixel difference in _c
+                if (Math.abs(bPix[j] - aPix[j]) < valueEpsilon  &&
+                    Math.abs(bPix[j + 1] - aPix[j + 1]) < valueEpsilon &&
+                    Math.abs(bPix[j + 2] - aPix[j + 2]) < valueEpsilon &&
+                    Math.abs(bPix[j + 3] - aPix[j + 3]) < valueEpsilon){
+                    cPix.data[j] = cPix.data[j+1] = cPix.data[j+2] = cPix.data[j+3] = 0;
+                } //Pixel difference in c
                 else{
-                    _cPix.data[j] = 255;
-                    _cPix.data[j+1] = _cPix.data[j+2] = 0;
-                    _cPix.data[j+3] = 255;
-                    rc = false;
+                    cPix.data[j] = 255;
+                    cPix.data[j+1] = cPix.data[j+2] = 0;
+                    cPix.data[j+3] = 255;
+                    failed = true;                 
                 }
             }
             //Display pixel difference in _c
-            if(rc){
-                _cCtx.fillStyle = "rgb(0,255,0)";
-                _cCtx.fillRect (0, 0, _c.width, _c.height);
+            if(failed){
+                cCtx.putImageData(cPix, 0, 0);
             }
             else{
-                _cCtx.putImageData(_cPix, 0, 0);
+                cCtx.fillStyle = "rgb(0,255,0)";
+                cCtx.fillRect (0, 0, c.width, c.height);
             }
         }
         else{
-            rc = false;
+            failed = true;
         }
-        return rc;
     }
     function setupKernel() {
         var ss = _sigma * _sigma;
@@ -261,4 +263,10 @@ var sundae = {};
         }
         return newData;
     }
+    // Opera createImageData fix
+    try {
+        if (!("createImageData" in CanvasRenderingContext2D.prototype)) {
+            CanvasRenderingContext2D.prototype.createImageData = function(sw,sh) { return this.getImageData(0,0,sw,sh); }
+        }
+    } catch(e) {}
 })(window);
