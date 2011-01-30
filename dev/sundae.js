@@ -6,90 +6,143 @@
  * Copyright (c) 2011 
  * http://www.opensource.org/licenses/mit-license.php
 */
-var sundae;
+var sundae = {};
 (function (window, undef) {
-    sundae = { "tests" : [] }
-    
-    var kernel, kernelSize, kernelSum;
-    //Sundae attributes
-    sundae.init = function(type, sigma, epsilon){
-        _type = "a";
-        _sig = 2;
-        _eps = 0.05;
-        //No reliable data checking
-        if(type != undef){
-            _type = type;
-            if(sigma != undef){
-                _sig = sigma;
-                if(epsilon != undef){
-                    _eps = epsilon;
-                }
+    //Enviroment variables
+    var _kernel, _kernelSize, _kernelSum;
+    var _tag = "a";
+    var _sigma = 2;
+    var _epsilon = 0.05;
+    var _w = window;
+    var _testSuite = [];
+
+    sundae.setBlurRadius = function(s){
+        if(s)
+            _sigma = s;
+    };
+    sundae.setTolerance = function(e){
+        if(e)
+            _epsilon = e;
+    };
+    sundae.setTestTag = function(t){
+        if(t)
+            _tag = t;
+    };
+    sundae.init = function(){
+        setupKernel();
+        setupBody();
+        getTests();     
+    };
+    function injestCurr(aCanvas, test){
+        var startTime = (new Date).getTime(), totalTime = 0;
+        try{
+            test.body.run(aCanvas);
+        }
+        catch(e){
+            throw (new error("Failed to render test"));
+        }
+        totalTime = (new Date).getTime() - startTime;
+        if(test.expectedTime){
+            if(totalTime > test.expectedTime){
+                throw (new error("Failed: " + (totalTime - test.expectedTime) + "ms Too long"));
             }
         }
-        buildKernel(_sig);
-        runCompare(buildTests(_type));
-
-    };
-    function buildTests(type){
-        getScript("./resources/tests.js");
-        getTests(type);
+        return totalTime;
     }
-    function getTests(type){
-        sundae.tests = new Array();
-        sundae.tests.push(SON.parse(tests));
-        //Only fill array with test type matching type ignore if type is a
-        for(int i = 0, len = sundae.tests.length; i < len ; i++){
-            getScript(sundae.tests[i].dependancies);
-        } 
-    }
-    function getScript(urlArray){
-    //toDo
-		var script;
-		
-		if (typeof url == 'object') {
-			for (var key in url) {
-				if (url[key]) {
-					script = { name: key, url: url[key] };
-				}
-			}
-		} else { 
-			script = { name: toLabel(url),  url: url }; 
-		}
-
-		var existing = scripts[script.name];
-		if (existing) { return existing; }
-		
-		// same URL?
-		for (var name in scripts) {
-			if (scripts[name].url == script.url) { return scripts[name]; }	
-		}
-		
-		scripts[script.name] = script;
-		return script;        
-    }
-    function runCompare(tests){
-        if(tests){
-            for(var i = 0, rc = false, len = tests.length; i < len; i++, rc = false){
-                if(tests[i].curr && tests[i].orig){
-                    if(rc = compare(tests[i].orig, false, tests[i].curr, true, tests[i].diff)){
-                        //_tests[i].title.innerHTML = titleText(i+1, tl, _tests[i].time, _tests[i].name);
-                        //passedCount++;
-                    }
-                    else{
-                        //_tests[i].title.innerHTML = titleText(i+1, tl, _tests[i].time, _tests[i].name, "pixels off");
-                        //failedCount++;
-                    }
+    function injectOrig(aCanvas, url){
+        if(url){
+            try{
+                var ctx = aCanvas.getContext("2d");
+                var img = new Image();
+                img.onload = function(){
+                    ctx.drawImage(img, 0, 0, img.width, img.height);
                 }
-                else{
-                    //_tests[i].title.innerHTML = titleText(i+1, tl, _tests[i].time, _tests[i].name, "invalid test");
-                    //failedCount++;
-                }
+                img.src = url;
+            }
+            catch(e){
+                throw (new error("Failed to load reference"));
             }
         }
         else{
-            //_tests[i].title.innerHTML = titleText(i+1, tl, _tests[i].time, _tests[i].name, "no tests");
+            throw (new error("No reference"));
         }
     }
+    function setupTest(test){
+        var name = test.name || "default";
+        var d = createDiv(_w.document.getElementById("sundae"), name);
+        var a = createCanvas(d, name + "-orig", 100, 100);
+        var b = createCanvas(d, name + "-curr", 100, 100);
+        var c = createCanvas(d, name + "-diff", 100, 100);
+        var t = 0;
+        try{
+            injectOrig(a, test.referenceImageURL);
+            t = injectCurr(b);
+        }
+        catch(e){
+            alert(e.name);
+            alert(e.message);
+        }
+    }
+    function createDiv(parent, id){
+        var d = _w.document.createElement("div");
+        d.id = id;
+        d.style = "margin: 5px; padding-top: 10px;";
+        parent.appendChild(d);
+        return d;
+    }
+    function createCanvas(parent, id, h, w){
+        var c = _w.document.createElement("canvas");
+        c.id = id;
+        c.width = w;
+        c.height = h;
+        parent.appendChild(c);
+        return c;
+    }
+    function setupBody(){
+        createDiv(_w.document.body, "sundae");
+    }
+    function getTests(){
+        var setupTests = function(){
+            _testSuite = testSuite;
+            if(_testSuite){
+                for(var i = 0, sl = _testSuite.length; i < sl; i++){
+                    if(_testSuite[i].test){
+                        for(var j = 0, tl = _testSuite[i].test.length; j < tl; j++){
+                            var test = _testSuite[i].test[j];
+                            var loadedStatus = false;
+                            if(_testSuite[i].test[j].dependancyURL){
+                                for(var m = 0, dl = _testSuite[i].test[j].dependancyURL.length; m < dl; m++){
+                                    getScript(_testSuite[i].test[j].dependancyURL[m], 
+                                        function(){
+                                            if(m == dl && loadedStatus == false){
+                                                loadedStatus = true;
+                                                setupTest(test);
+                                            }
+                                        }
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        getScript("./resources/tests.js", setupTests); 
+    }
+    function getScript(url, callback){
+        var s = _w.document.createElement('script');
+        s.type = 'text/javascript';
+        s.src = url;
+        s.async = false;     
+        s.onreadystatechange = s.onload = function(){
+            var state = s.readyState;
+            if(!state || /loaded|complete/.test(state)){
+                callback();
+            }
+        }
+        _w.document.head.appendChild(s);       
+    }
+    //Global Utility Functions
     function getPixels(aCanvas, isWebGL) {        
         try {
             if (isWebGL) {
@@ -115,30 +168,9 @@ var sundae;
             return null;
         }
     }
-    //Global Canvas fillers
-    function inject_c3dl(_aCanvas, _main, _path){
-        var startTime = (new Date).getTime(), totalTime = 0;
-        if(_aCanvas && _main && _path){
-            c3dl.addMainCallBack(_main, _aCanvas);
-            c3dl.addModel(_path);
-        }
-        totalTime = (new Date).getTime() - startTime;
-        return totalTime;
-    }
-    function inject_png(_aCanvas, _path){
-        if(_aCanvas && _path){
-         var _ctx = _aCanvas.getContext('2d');
-            var _img = new Image();
-            _img.onload = function(){
-            _ctx.drawImage(_img,0,0,_img.width,_img.height);
-            }
-            _img.src = _path;         
-        }   
-    }
-    //Global utility functions
     function compare(_a, _aWebGL, _b, _bWebGL, _c){
         var rc = true;
-        var valueEpsilon = epsilon * 255;
+        var valueEpsilon = _epsilon * 255;
         //Get pixel arrays from canvases
         var _aPix = getPixels(_a, _aWebGL); 
         var _bPix = getPixels(_b, _bWebGL);
@@ -178,30 +210,30 @@ var sundae;
         }
         return rc;
     }
-    function buildKernel(sig) {
-        var ss = sig * sig;
+    function setupKernel() {
+        var ss = _sigma * _sigma;
         var factor = 2 * Math.PI * ss;
-        kernel = new Array();
-        kernel.push(new Array());
+        _kernel = new Array();
+        _kernel.push(new Array());
         var i = 0, j;
         do {
             var g = Math.exp(-(i * i) / (2 * ss)) / factor;
             if (g < 1e-3) break;
-            kernel[0].push(g);
+            _kernel[0].push(g);
             ++i;
         } while (i < 7);
-        kernelSize = i;
-        for (j = 1; j < kernelSize; ++j) {
-            kernel.push(new Array());
-            for (i = 0; i < kernelSize; ++i) {
+        _kernelSize = i;
+        for (j = 1; j < _kernelSize; ++j) {
+            _kernel.push(new Array());
+            for (i = 0; i < _kernelSize; ++i) {
                 var g = Math.exp(-(i * i + j * j) / (2 * ss)) / factor;
-                kernel[j].push(g);
+                _kernel[j].push(g);
             }
         }
-        kernelSum = 0;
-        for (j = 1 - kernelSize; j < kernelSize; ++j) {
-            for (i = 1 - kernelSize; i < kernelSize; ++i) {
-                kernelSum += kernel[Math.abs(j)][Math.abs(i)];
+        _kernelSum = 0;
+        for (j = 1 - _kernelSize; j < _kernelSize; ++j) {
+            for (i = 1 - _kernelSize; i < _kernelSize; ++i) {
+                _kernelSum += _kernel[Math.abs(j)][Math.abs(i)];
             }
         }
     }
@@ -211,20 +243,20 @@ var sundae;
         for (var y = 0; y < height; ++y) {
             for (var x = 0; x < width; ++x) {
                 var r = 0, g = 0, b = 0, a = 0;
-                for (j = 1 - kernelSize; j < kernelSize; ++j) {
+                for (j = 1 - _kernelSize; j < _kernelSize; ++j) {
                     if (y + j < 0 || y + j >= height) continue;
-                    for (i = 1 - kernelSize; i < kernelSize; ++i) {
+                    for (i = 1 - _kernelSize; i < _kernelSize; ++i) {
                         if (x + i < 0 || x + i >= width) continue;
-                        r += data[4 * ((y + j) * width + (x + i)) + 0] * kernel[Math.abs(j)][Math.abs(i)];
-                        g += data[4 * ((y + j) * width + (x + i)) + 1] * kernel[Math.abs(j)][Math.abs(i)];
-                        b += data[4 * ((y + j) * width + (x + i)) + 2] * kernel[Math.abs(j)][Math.abs(i)];
-                        a += data[4 * ((y + j) * width + (x + i)) + 3] * kernel[Math.abs(j)][Math.abs(i)];
+                        r += data[4 * ((y + j) * width + (x + i)) + 0] * _kernel[Math.abs(j)][Math.abs(i)];
+                        g += data[4 * ((y + j) * width + (x + i)) + 1] * _kernel[Math.abs(j)][Math.abs(i)];
+                        b += data[4 * ((y + j) * width + (x + i)) + 2] * _kernel[Math.abs(j)][Math.abs(i)];
+                        a += data[4 * ((y + j) * width + (x + i)) + 3] * _kernel[Math.abs(j)][Math.abs(i)];
                     }
                 }
-                newData[4 * (y * width + x) + 0] = r / kernelSum;
-                newData[4 * (y * width + x) + 1] = g / kernelSum;
-                newData[4 * (y * width + x) + 2] = b / kernelSum;
-                newData[4 * (y * width + x) + 3] = a / kernelSum;               
+                newData[4 * (y * width + x) + 0] = r / _kernelSum;
+                newData[4 * (y * width + x) + 1] = g / _kernelSum;
+                newData[4 * (y * width + x) + 2] = b / _kernelSum;
+                newData[4 * (y * width + x) + 3] = a / _kernelSum;               
             }
         }
         return newData;

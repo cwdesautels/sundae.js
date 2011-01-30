@@ -1,53 +1,94 @@
-var tests = [{
-    "name": "Test 1",
-    "type": "static",
-    "knownGood": "./resources/expected/test1.png",
-    "dependancies": ["./resources/dependancies/c3dl/c3dapi.js"],
-    "requirements": ["./resources/requirements/duck.dae"],
-    "errorMsg": "Default scene failed to render properly [Camera_pos = 0,0,-500]",
-    "run": {
-        "start": function (canvas) {
-            scn = new c3dl.Scene();
-            scn.setCanvasTag(canvas);
-            renderer = new c3dl.WebGL();
-            renderer.createRenderer(this);
-            scn.setRenderer(renderer);
-            scn.init(canvas);
-            if (renderer.isReady()) {
-                duck = new c3dl.Collada();
-                duck.init(test1.requirements[0]);
-                scn.addObjectToScene(duck);
-                var cam = new c3dl.FreeCamera();
-                cam.setPosition(new Array(0, 0, -500.0));
-                cam.setLookAtPoint(new Array(0.0, 0.0, 0.0));
-                scn.setCamera(cam);
-                scn.startScene();
-            }
-        },
-        "pre": function (canvas) {
-            c3dl.init();
-            c3dl.addMainCallBack(tests[0].run.start, canvas);
-            c3dl.addModel(tests[0].requirements[0]);
-        },
-        "post": function (canvas) {}
-    }
-}, { //Next test object
-    "name": "",                 //REQUIRED: Its gotta have a name right?
-    "type": "",                 //Selective test loading (static or calibration)
-    "knownGood": "",            //REQUIRED: Known good result (eg. png's path)
-    "dependancies": ["", ""],   //Library dependancies
-    "requirements": ["", ""],   //Additional file dependancies (eg. model's path)
-    "errorMsg": "",             //Meaningful error
-    "run": {
-        "start": function (canvas) { 
-            //REQUIRED: Begins render inside canvas    
-        },
-        "pre": function (canvas) {
-            //test enviroment construction
-        },
-        "post": function (canvas) {
-            //test enviroment deconstruction
+/*
+API
+
+All function calls can be substituted with a URL to a function
+*REQUIRED - indicate required parameters for test
+
+
+var globalBlurRadius = int
+var globalTolerance = float
+function globalSetup(){called once before first suite is started}
+function globalTeardown(){called once after last suite is finished}
+function onGlobalRun(){called before each suite's setup}
+function onGlobalRunComplete(){called before each suite's teardown}
+
+var testSuite = [ Array or suites within the scope of the program
+  {
+    suiteBlurRadius: int
+    suiteTolerance: float
+    suiteSetup: function(){called once before suite starts}
+    suiteTeardown: function(){called once after suite ends}
+    onSuiteRun: function(canvas){called before each test's setup within suite}
+    onSuiteRunComplete: function(canvas){called after each test's teardown within suite} 
+    test : [ Array of tests within the scope of the suite
+      {
+        name: string
+        ID: string
+        tag: const
+        expectedFail: boolean
+        expectedPass: boolean
+        dependancyURL: [array of URL strings]
+        referenceImageURL: string
+        messageOnFail: string
+        messageOnPass: string
+        description: string
+        testBlurRadius: int
+        testTolerance: float
+        expectedTime: int(ms)
+        body: {
+          run: function(canvas){called to run selected test} * REQUIRED
+          testSetup: function(canvas){called once before test starts} 
+          testTeardown: function(canvas){called once after test ends}
+          onTestRun: function(canvas){called before test's setup}
+          onTestRunComplete: function(canvas){called after test's teardown}
         }
-    }
-}];
-JSON.encode(tests);
+      }
+    ]
+  }
+]
+*/
+
+var globalBlurRadius = 0;
+var globalTolerance = 0.00;
+function globalSetup(){}
+function globalTeardown(){}
+function onGlobalRun(){}
+function onGlobalRunComplete(){}
+
+var testSuite = [
+  {
+    suiteBlurRadius: 0,
+    suiteTolerance: 0.00,
+    suiteSetup: function(){},
+    suiteTeardown: function(){},
+    onSuiteRun: function(canvas){},
+    onSuiteRunComplete: function(canvas){},
+    test : [
+      {
+        name: "",
+        ID: "",
+        tag: "",
+        expectedFail: false,
+        expectedPass: false,
+        dependancyURL: ["",""],
+        referenceImageURL: "",
+        messageOnFail: "",
+        messageOnPass: "",
+        description: "",
+        testBlurRadius: 0,
+        testTolerance: 0.00,
+        expectedTime: 0,
+        body: {
+          run: function(canvas){},
+          testSetup: function(canvas){},
+          testTeardown: function(canvas){},
+          onTestRun: function(canvas){},
+          onTestRunComplete: function(canvas){}
+        }
+      },  //test 1
+      {}, //test 2
+      {}  //test 3
+    ]
+  },  //suite 1
+  {} //suite 2
+];
