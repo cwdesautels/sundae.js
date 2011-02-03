@@ -127,15 +127,16 @@ var sundae = {};
         }
         getScript("./resources/tests.js", setupTests); 
     }
-    function getScript(url, callback){
+    function getScript(src, callback){
         var s = _w.document.createElement('script');
         s.type = 'text/javascript';
-        s.src = url;
-        s.async = false;     
-        s.onreadystatechange = s.onload = function(){
-            var state = s.readyState;
-            if(!state || /loaded|complete/.test(state)){
-                callback();
+        s.src = src;
+        s.onload = callback;
+        s.onreadystatechange = function(){
+            var state = this.readyState;
+            if(state === 'loaded' || state === 'complete'){
+                this.onreadystatechage = undef;
+                this.onload();
             }
         }
         _w.document.head.appendChild(s);       
