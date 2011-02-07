@@ -130,7 +130,6 @@ var sundae = {};
     function getScript(url, callback){
         var s = _w.document.createElement('script');
         s.type = 'text/javascript';
-        s.src = url;
         s.async = false;     
         s.onreadystatechange = s.onload = function(){
             var state = s.readyState;
@@ -138,6 +137,7 @@ var sundae = {};
                 callback();
             }
         }
+        s.src = url;
         _w.document.head.appendChild(s);       
     }
     //Global Utility Functions
