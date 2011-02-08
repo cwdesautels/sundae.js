@@ -60,8 +60,8 @@ var testSuite = [
       test: [
       {   //test 1
           name: "First test!",
-          dependancyURL: [""],
-          referenceImageURL: "./resources/default.png",
+          //dependancyURL: [""],
+          referenceImageURL: "resources/default.png",
           body: {
               run: function (canvas) {
                   var gl = canvas.getContext('experimental-webgl');
@@ -72,7 +72,7 @@ var testSuite = [
       },
       {   //Test 2
           name: "Second test!",
-          referenceImageURL: "./resources/default2.png",
+          referenceImageURL: "resources/default2.png",
           body: {
               run: function (canvas) {
                   var gl = canvas.getContext('experimental-webgl');
@@ -86,8 +86,8 @@ var testSuite = [
       test: [
       {   //test 3
           name: "Third test!",
-          dependancyURL: [""],
-          referenceImageURL: "./resources/default.png",
+          //dependancyURL: [""],
+          referenceImageURL: "resources/default.png",
           body: {
               run: function (canvas) {
                   var gl = canvas.getContext('experimental-webgl');
@@ -98,7 +98,7 @@ var testSuite = [
       },
       {   //Test 4
           name: "Fourth test!",
-          referenceImageURL: "./resources/default2.png",
+          referenceImageURL: "resources/default2.png",
           body: {
               run: function (canvas) {
                   var gl = canvas.getContext('experimental-webgl');
@@ -106,7 +106,7 @@ var testSuite = [
                   gl.clear(gl.COLOR_BUFFER_BIT);
               }
           }
-      },
+      }/*,
       {   //Test 5
           name: "Fifth test!",
           dependancyURL: "./resources/c3dl/c3dapi.js",
@@ -133,6 +133,6 @@ var testSuite = [
                   }
               }
           }
-      }]
+      }*/]
   }
 ];

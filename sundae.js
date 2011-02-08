@@ -108,6 +108,7 @@ var sundae = {};
                             if(_testSuite[i].test[j].dependancyURL){//starting of sync nightmare
                                 //for(var m = 0, dl = _testSuite[i].test[j].dependancyURL.length; m < dl; m++){
                                     //getScript(_testSuite[i].test[j].dependancyURL[m],
+                                    alert("Asd");
                                     getScript(_testSuite[i].test[j].dependancyURL,
                                         function(_test){
                                             var test = _test;
@@ -125,12 +126,11 @@ var sundae = {};
                 }
             }
         }
-        getScript("./resources/tests.js", setupTests); 
+        getScript("resources/tests.js", setupTests); 
     }
     function getScript(src, callback){
         var s = _w.document.createElement('script');
         s.type = 'text/javascript';
-        s.src = src;
         s.onload = callback;
         s.onreadystatechange = function(){
             var state = this.readyState;
@@ -139,8 +139,8 @@ var sundae = {};
                 this.onload();
             }
         }
-        s.src = url;
-        _w.document.head.appendChild(s);       
+        s.src = src;
+        _w.document.head.appendChild(s);             
     }
     //Global Utility Functions
     function getPixels(aCanvas, isWebGL) {        
@@ -166,7 +166,13 @@ var sundae = {};
                 return data;
             } 
             else {
-                return aCanvas.getContext('2d').getImageData(0, 0, aCanvas.width, aCanvas.height).data;
+                try{
+                    return aCanvas.getContext('2d').getImageData(0, 0, aCanvas.width, aCanvas.height).data;
+                }
+                catch(e){
+                    netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
+                    return aCanvas.getContext('2d').getImageData(0, 0, aCanvas.width, aCanvas.height).data;
+                }
             }
         } 
         catch (e) {
