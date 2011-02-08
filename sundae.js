@@ -60,7 +60,7 @@ var sundae = {};
                 var img = new Image();
                 img.onload = function(){
                     ctx.drawImage(img, 0, 0, img.width, img.height);
-                    t = injectCurr(b, test.body.run);
+                    t = injectCurr(b, test.run);
                     compare(a, b, c);
                     reportResult(r,t,e);
                 }
@@ -82,8 +82,6 @@ var sundae = {};
     function createDiv(parent, id){
         var d = _w.document.createElement("div");
         d.id = id;
-        //Not working
-        //d.style = "margin: 5px; padding-top: 10px;";
         parent.appendChild(d);
         return d;
     }
@@ -100,33 +98,37 @@ var sundae = {};
     }
     function getTests(){
         var setupTests = function(){
-            _testSuite = testSuite;
+            _testSuite = data.testSuite;  
+            //_testSuite = testSuite;
+            _deps = {};
             if(_testSuite){
                 for(var i = 0, sl = _testSuite.length; i < sl; i++){
                     if(_testSuite[i].test){
                         for(var j = 0, tl = _testSuite[i].test.length; j < tl; j++){
                             if(_testSuite[i].test[j].dependancyURL){//starting of sync nightmare
-                                //for(var m = 0, dl = _testSuite[i].test[j].dependancyURL.length; m < dl; m++){
-                                    //getScript(_testSuite[i].test[j].dependancyURL[m],
-                                    alert("Asd");
-                                    getScript(_testSuite[i].test[j].dependancyURL,
-                                        function(_test){
-                                            var test = _test;
-                                            //This async code is breaking my brain
-                                            return function(){setupTest(test);};
-                                        }(_testSuite[i].test[j])
+                                for(var m = 0, dl = _testSuite[i].test[j].dependancyURL.length; m < dl; m++){
+                                    _deps[_testSuite[i].test[j].dependancyURL[m]] = false;
+                                }
+                                for (var x in _deps){
+                                    load(_deps[x]).thenRun(
+                                        function(_dep){
+                                            return function(){_dep = true;};
+                                        }(_deps[x])
                                     );
-                                //}
+                                }
                             }
-                            else{
-                                setupTest(_testSuite[i].test[j]);
-                            }
+                            defer(500).thenRun(
+                                function(_test){
+                                    return function(){setupTest(_test)};
+                                }(_testSuite[i].test[j])
+                            );
                         }
                     }
                 }
             }
         }
-        getScript("resources/tests.js", setupTests); 
+        getScript("resources/testsJSON.js", setupTests); 
+        //getScript("resources/tests.js", setupTests);
     }
     function getScript(src, callback){
         var s = _w.document.createElement('script');
@@ -140,7 +142,7 @@ var sundae = {};
             }
         }
         s.src = src;
-        _w.document.head.appendChild(s);             
+        _w.document.head.appendChild(s);       
     }
     //Global Utility Functions
     function getPixels(aCanvas, isWebGL) {        
@@ -277,4 +279,7 @@ var sundae = {};
             CanvasRenderingContext2D.prototype.createImageData = function(sw,sh) { return this.getImageData(0,0,sw,sh); }
         }
     } catch(e) {}
+    //load.js
+    /* Copyright (c) 2010 Chris O'Hara <cohara87@gmail.com>. MIT Licensed */
+    function loadScript(a,b,c){var d=document.createElement("script");d.type="text/javascript",d.src=a,d.onload=b,d.onerror=c,d.onreadystatechange=function(){var a=this.readyState;if(a==="loaded"||a==="complete")d.onreadystatechange=null,b()},head.insertBefore(d,head.firstChild)}(function(a){a=a||{};var b={},c,d;c=function(a,d,e){var f=a.halt=!1;a.error=function(a){throw a},a.next=function(c){c&&(f=!1);if(!a.halt&&d&&d.length){var e=d.shift(),g=e.shift();f=!0;try{b[g].apply(a,[e,e.length,g])}catch(h){a.error(h)}}return a};for(var g in b){if(typeof a[g]==="function")continue;(function(b){a[b]=function(){var e=Array.prototype.slice.call(arguments);e.unshift(b);if(!d)return c({},[e],b);a.then=a[b],d.push(e);return f?a:a.next()}})(g)}e&&(a.then=a[e]),a.call=function(b,c){c.unshift(b),d.unshift(c),a.next(!0)};return a.next()},d=a.addMethod=function(d){var e=Array.prototype.slice.call(arguments),f=e.pop();for(var g=0,h=e.length;g<h;g++)typeof e[g]==="string"&&(b[e[g]]=f);--h||(b["then"+d[0].toUpperCase()+d.substr(1)]=f),c(a)},d("run",function(a,b){var c=this,d=function(){c.halt||(--b||c.next(!0))};for(var e=0,f=b;!c.halt&&e<f;e++)null!=a[e].call(c,d,c.error)&&d()}),d("defer",function(a){var b=this;setTimeout(function(){b.next(!0)},a.shift())}),d("onError",function(a,b){var c=this;this.error=function(d){c.halt=!0;for(var e=0;e<b;e++)a[e].call(c,d)},this.next(!0)})})(this),addMethod("load",function(a,b){for(var c=[],d=0;d<b;d++)(function(b){c.push(function(c,d){loadScript(a[b],c,d)})})(d);this.call("run",c)});var head=document.getElementsByTagName("head")[0]||document.documentElement    
 })(window);
