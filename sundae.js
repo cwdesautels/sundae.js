@@ -97,9 +97,8 @@ var sundae = {};
         createDiv(_w.document.body, "sundae");
     }
     function getTests(){
-        var setupTests = function(){
-            _testSuite = data.testSuite;  
-            //_testSuite = testSuite;
+        var setupTests = function(data){
+            _testSuite = data || (testSuite || undef);
             _deps = {};
             if(_testSuite){
                 for(var i = 0, sl = _testSuite.length; i < sl; i++){
@@ -127,21 +126,26 @@ var sundae = {};
                 }
             }
         }
-        getScript("resources/testsJSON.js", setupTests); 
-        //getScript("resources/tests.js", setupTests);
+        //getScript("resources/testsJSON.js", setupTests, true); 
+        getScript("resources/tests.js", setupTests);
     }
-    function getScript(src, callback){
+    function getScript(src, success, isJSON){
+		var callback = "jsonp";
         var s = _w.document.createElement('script');
-        s.type = 'text/javascript';
-        s.onload = callback;
-        s.onreadystatechange = function(){
-            var state = this.readyState;
-            if(state === 'loaded' || state === 'complete'){
-                this.onreadystatechage = undef;
-                this.onload();
-            }
-        }
-        s.src = src;
+		s.type = 'text/javascript';
+		if(isJSON){
+			src += "?callback=" + callback;
+		}
+		s.onload = function(){
+			if(isJSON){
+				_w[callback] = function (data){
+					success(data);
+				};
+			}
+			else
+				success(undef);			
+        };
+		s.src = src;
         _w.document.head.appendChild(s);       
     }
     //Global Utility Functions
