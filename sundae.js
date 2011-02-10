@@ -45,36 +45,27 @@ var sundae = {};
         var c = createCanvas(d, name + "-diff", 100, 100);
         var t = 0;
         var injectCurr = function(aCanvas, run){
-            var startTime = (new Date).getTime(), totalTime = 0;
-            //try{
-                run(aCanvas);
-            //}
-            //catch(e){
-            //    throw (new error("Failed to render test"));
-            //}
-            return (new Date).getTime() - startTime;
+            var testObj = eval(run);
+            var startTime = 0;
+            if(typeof(testObj) === "function"){
+                startTime = (new Date).getTime();
+                testObj(aCanvas);
+            }
+            else if(typeof(testObj) === "object"){
+                startTime = (new Date).getTime();
+                getScript(testObj.src, function(){_w[testObj.func](aCanvas);}); 
+            }
+            t = (new Date).getTime() - startTime;
+            defer(500).thenRun(function(){compare(a, b, c);reportResult(r,t,e);});
         };
         var injectOrig = function(aCanvas, url){
-            //if(url){
-                var ctx = aCanvas.getContext("2d");
-                var img = new Image();
-                img.onload = function(){
-                    ctx.drawImage(img, 0, 0, img.width, img.height);
-                    t = injectCurr(b, test.run);
-                    compare(a, b, c);
-                    reportResult(r,t,e);
-                }
-                img.src = url;
-            //}
-                //catch(e){
-                //    throw (new error("Failed to load reference"));
-                //}
-            //else{
-            //    var ctx = aCanvas.getContext("experimental-webgl");
-            //    ctx.clearColor(0, 0, 0, 1);
-            //    ctx.clear(ctx.COLOR_BUFFER_BIT);
-            //
-            //}
+            var ctx = aCanvas.getContext("2d");
+            var img = new Image();
+            img.onload = function(){
+                ctx.drawImage(img, 0, 0, img.width, img.height);
+                injectCurr(b, test.run);
+            }
+            img.src = url;
         };
         //Fill Canvases
         injectOrig(a, test.referenceImageURL);
@@ -97,8 +88,8 @@ var sundae = {};
         createDiv(_w.document.body, "sundae");
     }
     function getTests(){
-        var setupTests = function(data){
-            _testSuite = data || (testSuite || undef);
+        var setupTests = function(data, validJson){
+            _testSuite = data.testSuite || undef;
             _deps = {};
             if(_testSuite){
                 for(var i = 0, sl = _testSuite.length; i < sl; i++){
@@ -125,28 +116,37 @@ var sundae = {};
                     }
                 }
             }
+            else{
+                alert("no test suite: " + _data);
+            }
         }
-        //getScript("resources/testsJSON.js", setupTests, true); 
-        getScript("resources/tests.js", setupTests);
+        getScript("resources/tests.json", setupTests, true); 
     }
     function getScript(src, success, isJSON){
-		var callback = "jsonp";
-        var s = _w.document.createElement('script');
-		s.type = 'text/javascript';
-		if(isJSON){
-			src += "?callback=" + callback;
-		}
-		s.onload = function(){
-			if(isJSON){
-				_w[callback] = function (data){
-					success(data);
-				};
-			}
-			else
-				success(undef);			
-        };
-		s.src = src;
-        _w.document.head.appendChild(s);       
+        if(isJSON){
+            var r = new XMLHttpRequest();
+            r.open("GET", src, true);
+            r.overrideMimeType("application/json");
+            r.onload = function(){
+                try{
+                    success(JSON.parse(r.responseText));
+                }
+                catch(e){
+                    //Not valid JSON
+                    success(eval("(" + r.responseText + ")"));
+                }
+            };
+            r.send(null);
+        }
+        else{
+            var s = _w.document.createElement('script');
+		    s.type = 'text/javascript';
+		    s.onload = function(){
+                success();
+            };
+		    s.src = src;
+            _w.document.head.appendChild(s);
+        }      
     }
     //Global Utility Functions
     function getPixels(aCanvas, isWebGL) {        
@@ -172,13 +172,7 @@ var sundae = {};
                 return data;
             } 
             else {
-                try{
-                    return aCanvas.getContext('2d').getImageData(0, 0, aCanvas.width, aCanvas.height).data;
-                }
-                catch(e){
-                    netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
-                    return aCanvas.getContext('2d').getImageData(0, 0, aCanvas.width, aCanvas.height).data;
-                }
+                return aCanvas.getContext('2d').getImageData(0, 0, aCanvas.width, aCanvas.height).data;
             }
         } 
         catch (e) {
