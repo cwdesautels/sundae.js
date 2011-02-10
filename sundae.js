@@ -116,13 +116,16 @@ var sundae = {};
                     }
                 }
             }
-            else{
-                alert("no test suite: " + _data);
-            }
         }
-        getScript("resources/tests.json", setupTests, true); 
+        getJSON("resources/tests.json", setupTests); 
     }
-    function getScript(src, success, isJSON){
+    function getJSON(src,callback){
+        get(src,callback,true);
+    }
+    function getScript(src,callback){
+        get(src,callback);
+    }
+    function get(src, success, isJSON){
         if(isJSON){
             var r = new XMLHttpRequest();
             r.open("GET", src, true);
