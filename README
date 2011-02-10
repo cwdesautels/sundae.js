@@ -1,39 +1,76 @@
-== Project Name ==
+=================
 
-C3DL test suite.
+  Sundae.js a Javascript Canvas Reference Tester
+  http://sundae.lighthouseapp.com/dashboard
+  http://zenit.senecac.on.ca/wiki/index.php/User:Cwdesautels/sundae
+  http://cwd89.blogspot.com/
+ 
+  The MIT License
+  Copyright (c) 2011 Carlin Desautels
+  http://www.opensource.org/licenses/mit-license.php
 
-== Project Leader(s) ==
+=========================
 
-Andor Salga
-Catherine Leung
-David Humphrey
+  API: resouces/tests.json
 
-== Project Contributor(s) ==
+=================================
 
-Andor Salga
-Catherine Leung
-Carlin Desautels
-Peter Leaning
+NOTES
+* "function(){...}" OR {"src": "url/to/file", "func": "nameOfFunctionInYourFile"}
+** When Your function is called it will be passed a Canvas for your library to edit, Note * applies
+*** Required field for test to be run, Note ** applies
 
-== Project Details ==
+{
 
-Create an easy to implement multi platform framework with the intent to compare webGL canvases and/or webGL buffers with known good or known bad results. Additionally the focus will be on webGL functionality relevant to c3dl, and c3dl rendered canvases.
+  "globalBlurRadius": int,
+  "globalTolerance": float,
+  //called once before first suite is started
+  "globalSetup": *,
+  //called once after last suite is finished
+  "globalTeardown": *,
+  //called before each suite's setup
+  "onGlobalRun": *,
+  //called before each suite's teardown
+  "onGlobalRunComplete": *,
 
-== Project Plan ==
+  //Array or suites within the scope of the program
+  "testSuite": [
+    { 
+      "suiteBlurRadius": int,
+      "suiteTolerance": float,
+      //called once before suite starts
+      "suiteSetup": *,
+      //called once after suite ends
+      "suiteTeardown": *,
+      //called before each test's setup within suite
+      "onSuiteRun": *,
+      //called after each test's teardown within suite
+      "onSuiteRunComplete": *
+      //Array of tests within the scope of the suite
+      "test": [
+        {
+          "name": "string",
+          "ID": "string",
+          "tag": "string",
+          "expectedFail": "boolean",
+          "expectedPass": "boolean",
+          "dependancyURL": ["array of URL strings"],
+          "referenceImageURL": "string",
+          "messageOnFail": "string",
+          "messageOnPass": "string",
+          "description": "string",
+          "testBlurRadius": int,
+          "testTolerance": float,
+          "expectedTime": int,
+          "run": ***,
+          "testSetup": **,
+          "testTeardown": **,
+          "onTestRun": **,
+          "onTestRunComplete": **
+        },{//More test objects},{...}
+      ]
+    },{//More testSuite objects},{...}
+  ]
+}
 
-0.4
-- Clearly identify the test process, and approach
-- Rewrite framework defining and separating the testing sequence
-- Update readPixels()
-- Confirm pixel comparison and blur() actually work
-
-== Project News ==
-
-* Lighthouse
-** http://sundae.lighthouseapp.com/projects/68207-sundaejs/overview
-
-* Wiki
-** http://zenit.senecac.on.ca/wiki/index.php/User:Cwdesautels/sundae
-
-* Blog
-** http://cwd89.blogspot.com/
+=========================================

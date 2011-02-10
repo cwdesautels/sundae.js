@@ -1,9 +1,9 @@
 /*!
  * Sundae Javascript Library v0.4
- * http://http://sundae.lighthouseapp.com/projects/68207-sundaejs/overview
+ * http://sundae.lighthouseapp.com/dashboard
  *
  * The MIT License
- * Copyright (c) 2011 
+ * Copyright (c) 2011 Carlin Desautels
  * http://www.opensource.org/licenses/mit-license.php
 */
 var sundae = {};
@@ -133,7 +133,7 @@ var sundae = {};
                 }
                 catch(e){
                     //Not valid JSON
-                    success(eval("(" + r.responseText + ")"));
+                    //success(eval("(" + r.responseText + ")"));
                 }
             };
             r.send(null);

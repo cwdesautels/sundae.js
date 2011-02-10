@@ -13,7 +13,7 @@
 		"test": [{
 			"name": "Third test!",
 			"referenceImageURL": "resources/default.png",
-			"run": function (canvas) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); }
+			"run": "function (canvas) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); }"
 		},{
 			"name": "Fourth test!",
 			"referenceImageURL": "resources/default3.png",
@@ -21,7 +21,7 @@
 		},{
 			"name": "Fith test!",
 			"referenceImageURL": "resources/default.png",
-			"run": {src: "resources/test_5.js",  func: "testFive" }
+			"run": {"src": "resources/test_5.js", "func": "testFive" }
 		}]
 	}]
 }
