@@ -146,6 +146,7 @@ var sundae = {};
 		    s.type = 'text/javascript';
 		    s.onload = function(){
                 success();
+                _w.document.head.removeChild(s);
             };
 		    s.src = src;
             _w.document.head.appendChild(s);
