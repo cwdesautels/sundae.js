@@ -133,7 +133,7 @@ var sundae = {};
                 }
                 catch(e){
                     //Not valid JSON
-                    //success(eval("(" + r.responseText + ")"));
+                    success(eval("(" + r.responseText + ")"));
                 }
             };
             r.send(null);
