@@ -87,6 +87,9 @@ var sundae = {};
                 }
             ); 
         }
+        else if(typeof(testObj) === "string"){
+            callback("curr", _w[testObj], aCanvas); 
+        }
     }
     function createDiv(parent, id){
         var d = _w.document.createElement("div");
@@ -110,7 +113,7 @@ var sundae = {};
             var loadDeps = function(deps, test){
                 if(typeof(deps) === 'object'){
                     if(deps.length > 0){
-                        getScript(deps.pop, 
+                        getScript(deps.pop(), 
                             function(){
                                 loadDeps(deps, test);
                             }
