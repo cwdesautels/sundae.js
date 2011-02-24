@@ -51,12 +51,15 @@ var sundae = {};
         }
         var isDone = {"orig" : false, "curr" : false};
         var whenDone = function(who, func, aCanvas){
+            isDone[who] = true;
             if(who == "curr" && func && aCanvas){
                 runTest(func, aCanvas);
                 reportResult(r, t, e);
             }
-            isDone[who] = true;
-            if(isDone.curr == true && isDone.orig == true){
+            if(isDone.curr === true && isDone.orig === true){
+                //if aPix == null error
+                //about:config
+                //security.fileuri.strict_origin_policy == false
                 compare(a, b, c);
             }
         };
@@ -104,25 +107,24 @@ var sundae = {};
     }
     function getTests(){
         var setupTests = function(data){
-            function depsLoaded(test){
-                setupTest(test);
-            }
             var loadDeps = function(deps, test){
                 if(typeof(deps) === 'object'){
                     if(deps.length > 0){
-                       getScript(deps.pop, loadDeps(deps, test));
+                        getScript(deps.pop, 
+                            function(){
+                                loadDeps(deps, test);
+                            }
+                        );
                     }
                     else{
-                        depsLoaded(test);
+                        setupTest(test);
                     }
                 }
                 else if(typeof(deps) === 'string'){
                     getScript(deps, 
-                        function(test){
-                            return function(){
-                                depsLoaded(test);
-                            }
-                        }(test)
+                        function(){
+                            setupTest(test);
+                        }
                     );
                 }
             };
@@ -135,7 +137,7 @@ var sundae = {};
                                 loadDeps(_testSuite[i].test[j].dependancyURL, _testSuite[i].test[j]);
                             }
                             else{
-                                depsLoaded(_testSuite[i].test[j]);
+                                setupTest(_testSuite[i].test[j]);
                             }
                         }
                     }
