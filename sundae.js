@@ -44,31 +44,46 @@ var sundae = {};
         var b = createCanvas(d, name + "-curr", 100, 100);
         var c = createCanvas(d, name + "-diff", 100, 100);
         var t = 0;
-        var injectCurr = function(aCanvas, run){
-            var testObj = eval(run);
-            var startTime = 0;
-            if(typeof(testObj) === "function"){
-                startTime = (new Date).getTime();
-                testObj(aCanvas);
-            }
-            else if(typeof(testObj) === "object"){
-                startTime = (new Date).getTime();
-                getScript(testObj.src, function(){_w[testObj.func](aCanvas);}); 
-            }
+        function runTest(func, aCanvas){
+            var startTime = (new Date).getTime();
+            func(aCanvas);
             t = (new Date).getTime() - startTime;
-            defer(500).thenRun(function(){compare(a, b, c);reportResult(r,t,e);});
-        };
-        var injectOrig = function(aCanvas, url){
-            var ctx = aCanvas.getContext("2d");
-            var img = new Image();
-            img.onload = function(){
-                ctx.drawImage(img, 0, 0, img.width, img.height);
-                injectCurr(b, test.run);
+        }
+        var isDone = {"orig" : false, "curr" : false};
+        var whenDone = function(who, func, aCanvas){
+            if(who == "curr" && func && aCanvas){
+                runTest(func, aCanvas);
+                reportResult(r, t, e);
             }
-            img.src = url;
+            isDone[who] = true;
+            if(isDone.curr == true && isDone.orig == true){
+                compare(a, b, c);
+            }
         };
-        //Fill Canvases
-        injectOrig(a, test.referenceImageURL);
+        injectOrig(a, test.referenceImageURL, whenDone);
+        injectCurr(b, test.run, whenDone);
+    }
+    function injectOrig(aCanvas, url, callback){
+        var ctx = aCanvas.getContext("2d");
+        var img = new Image();
+        img.onload = function(){
+            ctx.drawImage(img, 0, 0, img.width, img.height);
+            callback("orig");
+        }
+        img.src = url;
+    }
+    function injectCurr(aCanvas, run, callback){
+        var testObj = eval(run);
+        if(typeof(testObj) === "function"){
+            callback("curr", testObj, aCanvas);
+        }
+        else if(typeof(testObj) === "object"){
+            getScript(testObj.src, 
+                function(){
+                    callback("curr", _w[testObj.func], aCanvas);
+                }
+            ); 
+        }
     }
     function createDiv(parent, id){
         var d = _w.document.createElement("div");
@@ -88,35 +103,45 @@ var sundae = {};
         createDiv(_w.document.body, "sundae");
     }
     function getTests(){
-        var setupTests = function(data, validJson){
+        var setupTests = function(data){
+            function depsLoaded(test){
+                setupTest(test);
+            }
+            var loadDeps = function(deps, test){
+                if(typeof(deps) === 'object'){
+                    if(deps.length > 0){
+                       getScript(deps.pop, loadDeps(deps, test));
+                    }
+                    else{
+                        depsLoaded(test);
+                    }
+                }
+                else if(typeof(deps) === 'string'){
+                    getScript(deps, 
+                        function(test){
+                            return function(){
+                                depsLoaded(test);
+                            }
+                        }(test)
+                    );
+                }
+            };
             _testSuite = data.testSuite || undef;
-            _deps = {};
             if(_testSuite){
                 for(var i = 0, sl = _testSuite.length; i < sl; i++){
                     if(_testSuite[i].test){
                         for(var j = 0, tl = _testSuite[i].test.length; j < tl; j++){
-                            if(_testSuite[i].test[j].dependancyURL){//starting of sync nightmare
-                                for(var m = 0, dl = _testSuite[i].test[j].dependancyURL.length; m < dl; m++){
-                                    _deps[_testSuite[i].test[j].dependancyURL[m]] = false;
-                                }
-                                for (var x in _deps){
-                                    load(_deps[x]).thenRun(
-                                        function(_dep){
-                                            return function(){_dep = true;};
-                                        }(_deps[x])
-                                    );
-                                }
+                            if(_testSuite[i].test[j].dependancyURL){
+                                loadDeps(_testSuite[i].test[j].dependancyURL, _testSuite[i].test[j]);
                             }
-                            defer(500).thenRun(
-                                function(_test){
-                                    return function(){setupTest(_test)};
-                                }(_testSuite[i].test[j])
-                            );
+                            else{
+                                depsLoaded(_testSuite[i].test[j]);
+                            }
                         }
                     }
                 }
             }
-        }
+        };
         getJSON("resources/tests.json", setupTests); 
     }
     function getJSON(src,callback){
@@ -281,7 +306,4 @@ var sundae = {};
             CanvasRenderingContext2D.prototype.createImageData = function(sw,sh) { return this.getImageData(0,0,sw,sh); }
         }
     } catch(e) {}
-    //load.js
-    /* Copyright (c) 2010 Chris O'Hara <cohara87@gmail.com>. MIT Licensed */
-    function loadScript(a,b,c){var d=document.createElement("script");d.type="text/javascript",d.src=a,d.onload=b,d.onerror=c,d.onreadystatechange=function(){var a=this.readyState;if(a==="loaded"||a==="complete")d.onreadystatechange=null,b()},head.insertBefore(d,head.firstChild)}(function(a){a=a||{};var b={},c,d;c=function(a,d,e){var f=a.halt=!1;a.error=function(a){throw a},a.next=function(c){c&&(f=!1);if(!a.halt&&d&&d.length){var e=d.shift(),g=e.shift();f=!0;try{b[g].apply(a,[e,e.length,g])}catch(h){a.error(h)}}return a};for(var g in b){if(typeof a[g]==="function")continue;(function(b){a[b]=function(){var e=Array.prototype.slice.call(arguments);e.unshift(b);if(!d)return c({},[e],b);a.then=a[b],d.push(e);return f?a:a.next()}})(g)}e&&(a.then=a[e]),a.call=function(b,c){c.unshift(b),d.unshift(c),a.next(!0)};return a.next()},d=a.addMethod=function(d){var e=Array.prototype.slice.call(arguments),f=e.pop();for(var g=0,h=e.length;g<h;g++)typeof e[g]==="string"&&(b[e[g]]=f);--h||(b["then"+d[0].toUpperCase()+d.substr(1)]=f),c(a)},d("run",function(a,b){var c=this,d=function(){c.halt||(--b||c.next(!0))};for(var e=0,f=b;!c.halt&&e<f;e++)null!=a[e].call(c,d,c.error)&&d()}),d("defer",function(a){var b=this;setTimeout(function(){b.next(!0)},a.shift())}),d("onError",function(a,b){var c=this;this.error=function(d){c.halt=!0;for(var e=0;e<b;e++)a[e].call(c,d)},this.next(!0)})})(this),addMethod("load",function(a,b){for(var c=[],d=0;d<b;d++)(function(b){c.push(function(c,d){loadScript(a[b],c,d)})})(d);this.call("run",c)});var head=document.getElementsByTagName("head")[0]||document.documentElement    
 })(window);
