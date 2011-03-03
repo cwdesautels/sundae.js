@@ -15,6 +15,7 @@ var sundae = {};
     var _epsilon = 0.05;
     var _w = window;
     var _testSuite = [];
+    var _loadedDeps = [];
 
     sundae.setBlurRadius = function(s){
         if(s)
@@ -63,8 +64,8 @@ var sundae = {};
                 compare(a, b, c);
             }
         };
-        injectOrig(a, test.referenceImageURL, whenDone);
         injectCurr(b, test.run, whenDone);
+        injectOrig(a, test.referenceImageURL, whenDone);
     }
     function injectOrig(aCanvas, url, callback){
         var ctx = aCanvas.getContext("2d");
@@ -131,8 +132,7 @@ var sundae = {};
                     );
                 }
             };
-            _testSuite = data.testSuite || undef;
-            if(_testSuite){
+            if(_testSuite = data.testSuite){
                 for(var i = 0, sl = _testSuite.length; i < sl; i++){
                     if(_testSuite[i].test){
                         for(var j = 0, tl = _testSuite[i].test.length; j < tl; j++){
@@ -149,6 +149,7 @@ var sundae = {};
         };
         getJSON("resources/tests.json", setupTests); 
     }
+    //Global Utility Functions
     function getJSON(src,callback){
         get(src,callback,true);
     }
@@ -156,33 +157,35 @@ var sundae = {};
         get(src,callback);
     }
     function get(src, success, isJSON){
-        if(isJSON){
-            var r = new XMLHttpRequest();
-            r.open("GET", src, true);
-            r.overrideMimeType("application/json");
-            r.onload = function(){
-                try{
-                    success(JSON.parse(r.responseText));
-                }
-                catch(e){
-                    //Not valid JSON
-                    success(eval("(" + r.responseText + ")"));
-                }
-            };
-            r.send(null);
-        }
-        else{
-            var s = _w.document.createElement('script');
-		    s.type = 'text/javascript';
-		    s.onload = function(){
-                success();
-                _w.document.head.removeChild(s);
-            };
-		    s.src = src;
-            _w.document.head.appendChild(s);
+        if(_loadedDeps.indexOf(src) == -1){
+            _loadedDeps.push(src);
+            if(isJSON){
+                var r = new XMLHttpRequest();
+                r.open("GET", src, true);
+                r.overrideMimeType("application/json");
+                r.onload = function(){
+                    try{
+                        success(JSON.parse(r.responseText));
+                    }
+                    catch(e){
+                        //Not valid JSON
+                        success(eval("(" + r.responseText + ")"));
+                    }
+                };
+                r.send(null);
+            }
+            else{
+                var s = _w.document.createElement('script');
+		        s.type = 'text/javascript';
+		        s.onload = function(){
+                    success();
+                    _w.document.head.removeChild(s);
+                };
+		        s.src = src;
+                _w.document.head.appendChild(s);
+            }
         }      
     }
-    //Global Utility Functions
     function getPixels(aCanvas, isWebGL) {        
         try {
             if (isWebGL) {
@@ -227,18 +230,24 @@ var sundae = {};
             var cCtx = c.getContext('2d');
             var cPix = cCtx.createImageData(c.width, c.height);
             var len = bPix.length;
-            for (var j=0; j < len; j+=4){
-                if (Math.abs(bPix[j] - aPix[j]) < valueEpsilon  &&
-                    Math.abs(bPix[j + 1] - aPix[j + 1]) < valueEpsilon &&
-                    Math.abs(bPix[j + 2] - aPix[j + 2]) < valueEpsilon &&
-                    Math.abs(bPix[j + 3] - aPix[j + 3]) < valueEpsilon){
+            var col = 0;
+            var row = (4 * c.width * c.height) - (4 * c.width);
+            for (var j = 0; j < len; j += 4, col+=4){
+                if(col === 4 * c.width){
+                    col = 0;
+                    row -= 4 * c.width;
+                }
+                if (Math.abs(bPix[row+col] - aPix[j]) < valueEpsilon  &&
+                    Math.abs(bPix[row+col + 1] - aPix[j+ 1]) < valueEpsilon &&
+                    Math.abs(bPix[row+col + 2] - aPix[j + 2]) < valueEpsilon &&
+                    Math.abs(bPix[row+col + 3] - aPix[j + 3]) < valueEpsilon){
                     cPix.data[j] = cPix.data[j+1] = cPix.data[j+2] = cPix.data[j+3] = 0;
                 } //Pixel difference in c
-                else{
+                else {
                     cPix.data[j] = 255;
                     cPix.data[j+1] = cPix.data[j+2] = 0;
                     cPix.data[j+3] = 255;
-                    failed = true;                 
+                    failed = true;
                 }
             }
             //Display pixel difference in _c
