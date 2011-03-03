@@ -15,37 +15,32 @@
 
 =================================
 
-NOTES
-* "function(){...}" OR {"src": "url/to/file", "func": "nameOfFunctionInYourFile"}
-** When Your function is called it will be passed a Canvas for your library to edit, Note * applies
-*** Required field for test to be run, Note ** applies
-
 {
-//Array or suites within the scope of the program
-	"testSuite": [
-		{ 
-			"dependancyURL": ["array of URL strings"] OR "just a single string",
-			"test": [
-				{
-					"name": "string",
-					"firstCanvas" : {
-						"src" : { 
-							"url" : "fileUrl", 
-							"type" : "supported types-> json, script, image" 
-						},
-						"run" : "global function name OR function(aCanvas){ definition }" 
-					},
-					"secondCanvas" : {
-						"src" : { 
-							"url" : "fileUrl", 
-							"type" : "supported types-> json, script, image" 
-						},
-						"run" : "global function name OR function(aCanvas){ definition }" 					
-					}
-				},{//More test objects},{...}
-			]
-		},{//More testSuite objects},{...}
-	]
+    //Array of suites within the scope of the program
+    "testSuite": [
+        { 
+            "dependancyURL": ["array of URL strings"] OR "just a single string",
+            "test": [
+                {
+                    "name": "string",
+                    "firstCanvas" : {
+                        "src" : { 
+                            "url" : "fileUrl", 
+                            "type" : "supported types-> json, script, image" 
+                        },
+                        "run" : "global function name OR function(aCanvas){ definition }" 
+                    },
+                    "secondCanvas" : {
+                        "src" : { 
+                            "url" : "fileUrl", 
+                            "type" : "supported types-> json, script, image" 
+                        },
+                        "run" : "global function name OR function(aCanvas){ definition }" 					
+                    }
+                },{//More test objects},{...}
+            ]
+        },{//More testSuite objects},{...}
+    ]
 }
 
 =========================================
