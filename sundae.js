@@ -112,16 +112,20 @@ var sundae = {};
     function getTests(){
         var setupTests = function(data){
             var loadDeps = function(deps, test){
+                var totalLen = 0, totalLoaded = 0;
+                var allDepsLoaded = function(t){
+                    totalLoaded++;
+                    if(totalLen === totalLoaded)
+                        setupTest(t);
+                };
                 if(typeof(deps) === 'object'){
-                    if(deps.length > 0){
-                        getScript(deps.pop(), 
-                            function(){
-                                loadDeps(deps, test);
-                            }
+                    totalLen = deps.length;
+                    for(var i = 0; i < deps.length; i++){
+                        getScript(deps[i], 
+                            function(t){
+                                return function() { allDepsLoaded(t); };
+                            }(test)
                         );
-                    }
-                    else{
-                        setupTest(test);
                     }
                 }
                 else if(typeof(deps) === 'string'){
