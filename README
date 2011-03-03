@@ -21,56 +21,31 @@ NOTES
 *** Required field for test to be run, Note ** applies
 
 {
-
-  "globalBlurRadius": int,
-  "globalTolerance": float,
-  //called once before first suite is started
-  "globalSetup": *,
-  //called once after last suite is finished
-  "globalTeardown": *,
-  //called before each suite's setup
-  "onGlobalRun": *,
-  //called before each suite's teardown
-  "onGlobalRunComplete": *,
-
-  //Array or suites within the scope of the program
-  "testSuite": [
-    { 
-      "suiteBlurRadius": int,
-      "suiteTolerance": float,
-      //called once before suite starts
-      "suiteSetup": *,
-      //called once after suite ends
-      "suiteTeardown": *,
-      //called before each test's setup within suite
-      "onSuiteRun": *,
-      //called after each test's teardown within suite
-      "onSuiteRunComplete": *
-      //Array of tests within the scope of the suite
-      "test": [
-        {
-          "name": "string",
-          "ID": "string",
-          "tag": "string",
-          "expectedFail": "boolean",
-          "expectedPass": "boolean",
-          "dependancyURL": ["array of URL strings"],
-          "referenceImageURL": "string",
-          "messageOnFail": "string",
-          "messageOnPass": "string",
-          "description": "string",
-          "testBlurRadius": int,
-          "testTolerance": float,
-          "expectedTime": int,
-          "run": ***,
-          "testSetup": **,
-          "testTeardown": **,
-          "onTestRun": **,
-          "onTestRunComplete": **
-        },{//More test objects},{...}
-      ]
-    },{//More testSuite objects},{...}
-  ]
+//Array or suites within the scope of the program
+	"testSuite": [
+		{ 
+			"dependancyURL": ["array of URL strings"] OR "just a single string",
+			"test": [
+				{
+					"name": "string",
+					"firstCanvas" : {
+						"src" : { 
+							"url" : "fileUrl", 
+							"type" : "supported types-> json, script, image" 
+						},
+						"run" : "global function name OR function(aCanvas){ definition }" 
+					},
+					"secondCanvas" : {
+						"src" : { 
+							"url" : "fileUrl", 
+							"type" : "supported types-> json, script, image" 
+						},
+						"run" : "global function name OR function(aCanvas){ definition }" 					
+					}
+				},{//More test objects},{...}
+			]
+		},{//More testSuite objects},{...}
+	]
 }
 
 =========================================
