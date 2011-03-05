@@ -14,7 +14,6 @@ var sundae = {};
     var _sigma = 2;
     var _epsilon = 0.05;
     var _w = window;
-    var _testSuite = [];
     var _loadedDeps = [];
 
     sundae.setBlurRadius = function(s){
@@ -41,8 +40,8 @@ var sundae = {};
         var name = test.name || "default";
         var d = createDiv(_w.document.getElementById("sundae"), name);
         var r = createDiv(d, name + "-title");
-        var a = createCanvas(d, name + "-orig", 100, 100);
-        var b = createCanvas(d, name + "-curr", 100, 100);
+        var a = createCanvas(d, name + "-first", 100, 100);
+        var b = createCanvas(d, name + "-second", 100, 100);
         var c = createCanvas(d, name + "-diff", 100, 100);
         var t = 0;
         function runTest(func, aCanvas){
@@ -50,13 +49,9 @@ var sundae = {};
             func(aCanvas);
             t = (new Date).getTime() - startTime;
         }
-        var isDone = {"orig" : false, "curr" : false};
-        var whenDone = function(who, func, aCanvas){
+        var isDone = {"first" : false, "second" : false};
+        var whenDone = function(who){
             isDone[who] = true;
-            if(who == "curr" && func && aCanvas){
-                runTest(func, aCanvas);
-                reportResult(r, t, e);
-            }
             if(isDone.curr === true && isDone.orig === true){
                 //if aPix == null error
                 //about:config
@@ -64,29 +59,46 @@ var sundae = {};
                 compare(a, b, c);
             }
         };
-        injectCurr(b, test.run, whenDone);
-        injectOrig(a, test.referenceImageURL, whenDone);
+        function sourceLoader(obj, aCanvas){
+            if(obj.src.type === "image"){
+                //injectImage(aCanvas, obj.src.url);    
+            }
+            else if(obj.src.type === "script"){
+
+            }
+            else if(obj.src.type === "json"){
+
+            }
+        }
+        function sourceRunner(obj, aCanvas, callback){
+
+        }
+        if(test.firstCanvas.src){
+            sourceLoader(test.firstCanvas, a);
+        }
+        else{
+            sourceRunner(test.firstCanvas.run, a);
+        }
+        if(test.secondCanvas.src){
+            sourceLoader(test.secondCanvas, b);
+        }
+        else{
+            sourceRunner(test.secondCanvas, b);
+        }
     }
-    function injectOrig(aCanvas, url, callback){
+    function injectImage(aCanvas, url, callback){
         var ctx = aCanvas.getContext("2d");
         var img = new Image();
         img.onload = function(){
             ctx.drawImage(img, 0, 0, img.width, img.height);
-            callback("orig");
+            callback();
         }
         img.src = url;
     }
-    function injectCurr(aCanvas, run, callback){
+    function injectFunction(aCanvas, run, callback){
         var testObj = eval(run);
         if(typeof(testObj) === "function"){
             callback("curr", testObj, aCanvas);
-        }
-        else if(typeof(testObj) === "object"){
-            getScript(testObj.src, 
-                function(){
-                    callback("curr", _w[testObj.func], aCanvas);
-                }
-            ); 
         }
         else if(typeof(testObj) === "string"){
             callback("curr", _w[testObj], aCanvas); 
@@ -110,85 +122,79 @@ var sundae = {};
         createDiv(_w.document.body, "sundae");
     }
     function getTests(){
-        var setupTests = function(data){
-            var loadDeps = function(deps, test){
-                var totalLen = 0, totalLoaded = 0;
-                var allDepsLoaded = function(t){
-                    totalLoaded++;
-                    if(totalLen === totalLoaded)
-                        setupTest(t);
-                };
-                if(typeof(deps) === 'object'){
-                    totalLen = deps.length;
-                    for(var i = 0; i < deps.length; i++){
-                        getScript(deps[i], 
-                            function(t){
-                                return function() { allDepsLoaded(t); };
-                            }(test)
+        var loadDeps = function(deps, callback){
+            var totalLen = 0, totalLoaded = 0;
+            var allDepsLoaded = function(){
+                totalLoaded++;
+                if(totalLen === totalLoaded)
+                    callback();
+            };
+            if(typeof(deps) === 'object'){
+                totalLen = deps.length;
+                for(var i = 0; i < deps.length; i++){
+                    getScript(deps[i], allDepsLoaded);
+                }
+            }
+            else if(typeof(deps) === 'string'){
+                getScript(deps, callback);
+            }
+        };
+        var setupTests = function(tests){
+            for(var j = 0; j < tests.length; j++){
+                setupTest(tests[j]);
+            }
+        };
+        var setupTestSuites = function(data){
+            if(data.testSuite){
+                for(var i = 0; i < data.testSuite.length; i++){
+                    if(data.testSuite[i].dependancyURL){
+                        loadDeps(data.testSuite[i].dependancyURL, 
+                            function(tests){
+                                return function(){
+                                    setupTests(tests);
+                                };
+                            }(data.testSuite[i].test)
                         );
                     }
-                }
-                else if(typeof(deps) === 'string'){
-                    getScript(deps, 
-                        function(){
-                            setupTest(test);
-                        }
-                    );
-                }
-            };
-            if(_testSuite = data.testSuite){
-                for(var i = 0, sl = _testSuite.length; i < sl; i++){
-                    if(_testSuite[i].test){
-                        for(var j = 0, tl = _testSuite[i].test.length; j < tl; j++){
-                            if(_testSuite[i].test[j].dependancyURL){
-                                loadDeps(_testSuite[i].test[j].dependancyURL, _testSuite[i].test[j]);
-                            }
-                            else{
-                                setupTest(_testSuite[i].test[j]);
-                            }
-                        }
-                    }
+                    else{
+                        setupTests(data.testSuite[i].test);
+                    }    
                 }
             }
         };
-        getJSON("resources/tests.json", setupTests); 
+        getJSON("resources/tests.json", setupTestSuites); 
     }
     //Global Utility Functions
-    function getJSON(src,callback){
-        get(src,callback,true);
-    }
-    function getScript(src,callback){
-        get(src,callback);
-    }
-    function get(src, success, isJSON){
+    function getJSON(src, callback){
         if(_loadedDeps.indexOf(src) == -1){
             _loadedDeps.push(src);
-            if(isJSON){
-                var r = new XMLHttpRequest();
-                r.open("GET", src, true);
-                r.overrideMimeType("application/json");
-                r.onload = function(){
-                    try{
-                        success(JSON.parse(r.responseText));
-                    }
-                    catch(e){
-                        //Not valid JSON
-                        success(eval("(" + r.responseText + ")"));
-                    }
-                };
-                r.send(null);
-            }
-            else{
-                var s = _w.document.createElement('script');
-		        s.type = 'text/javascript';
-		        s.onload = function(){
-                    success();
-                    _w.document.head.removeChild(s);
-                };
-		        s.src = src;
-                _w.document.head.appendChild(s);
-            }
-        }      
+            var r = new XMLHttpRequest();
+            r.open("GET", src, true);
+            r.overrideMimeType("application/json");
+            r.onload = function(){
+                try{
+                    callback(JSON.parse(r.responseText));
+                }
+                catch(e){
+                    //Not valid JSON
+                    callback(eval("(" + r.responseText + ")"));
+                }
+            };
+            r.send(null);
+        }
+    }
+    function getScript(src, callback){
+        if(_loadedDeps.indexOf(src) == -1){
+            _loadedDeps.push(src);
+            var s = _w.document.createElement('script');
+            s.type = 'text/javascript';
+            s.onload = function(){
+                callback();
+                _w.document.head.removeChild(s);
+            };
+            s.src = src;
+            _w.document.head.appendChild(s);
+        }
     }
     function getPixels(aCanvas, isWebGL) {        
         try {

@@ -1,29 +1,42 @@
 {
-	"testSuite": [{
-		"test": [{
-			"name": "First test!",
-			"dependancyURL": "resources/test_1.js",
-			"referenceImageURL": "resources/default.png",
-			"run": "testOne"
-		},{
-			"name": "Second test!",
-			"referenceImageURL": "resources/default2.png",
-			"run": "function (canvas) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); }"
-		}]
-	},{
-		"test": [{
-			"name": "Third test!",
-			"dependancyURL": ["resources/test_2a.js", "resources/test_2b.js"],
-			"referenceImageURL": "resources/default.png",
-			"run": "testTwo"
-		},{
-			"name": "Fourth test!",
-			"referenceImageURL": "resources/default3.png",
-			"run": "function (canvas) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); }"
-		},{
-			"name": "Fith test!",
-			"referenceImageURL": "resources/default.png",
-			"run": {"src": "resources/test_5.js", "func": "testFive" }
-		}]
-	}]
+    "testSuite": [{ 
+        "dependancyURL": "resources/test_1.js",
+        "test": [{
+            "name": "First Test!",
+            "firstCanvas" : {
+                "src" : { "url" : "resources/default.png", "type" : "image" }
+            },
+            "secondCanvas" : {
+                "run" : "testOne" 					
+            }
+        },{
+            "name": "Second Test!",
+            "firstCanvas" : {
+                "src" : { "url" : "resources/default2.png", "type" : "image" }
+            },
+            "secondCanvas" : {
+                "run" : "function (canvas) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); }" 					
+            }
+        }]
+    },{ 
+        "dependancyURL": ["resources/test_2a.js", "resources/test_2b.js"],
+        "test": [{
+            "name": "Third Test!",
+            "firstCanvas" : {
+                "run" : "testTwo" 
+            },
+            "secondCanvas" : {
+                "src" : { "url" : "resources/default.png", "type" : "image" }
+            }
+        },{
+            "name": "Fourth Test!",
+            "firstCanvas" : {
+                "src" : { "url" : "resources/test_5.js", "type" : "script" },
+                "run" : "testFive" 
+            },
+            "secondCanvas" : {
+                "run" : "function (canvas) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); }"					
+            }
+        }]
+    }]
 }
