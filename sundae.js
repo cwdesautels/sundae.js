@@ -7,13 +7,12 @@
  * http://www.opensource.org/licenses/mit-license.php
 */
 var sundae = {};
-(function (window, undef) {
+(function (_w, undef) {
     //Enviroment variables
     var _kernel, _kernelSize, _kernelSum;
     var _tag = "a";
     var _sigma = 2;
     var _epsilon = 0.05;
-    var _w = window;
     var _loadedDeps = [];
 
     sundae.setBlurRadius = function(s){
@@ -52,56 +51,59 @@ var sundae = {};
         var isDone = {"first" : false, "second" : false};
         var whenDone = function(who){
             isDone[who] = true;
-            if(isDone.curr === true && isDone.orig === true){
+            if(isDone["first"] == true && isDone["second"] == true){
                 //if aPix == null error
                 //about:config
                 //security.fileuri.strict_origin_policy == false
-                compare(a, b, c);
+                compareCanvas(a, b, c);
             }
         };
-        function sourceLoader(obj, aCanvas){
+        function sourceLoader(obj, aCanvas, who){
             if(obj.src.type === "image"){
-                //injectImage(aCanvas, obj.src.url);    
+                getImage(aCanvas, obj.src.url, 
+                    function(){
+                        whenDone(who)
+                    }
+                );    
             }
             else if(obj.src.type === "script"){
-
+                getScript(obj.src.url, 
+                    function(){
+                        _w[obj.run](aCanvas);
+                        whenDone(who);
+                    }
+                );
             }
             else if(obj.src.type === "json"){
-
+                getJSON(obj.src.url,
+                    function(data){
+                        data[obj.run](aCanvas);
+                        whenDone(who);
+                    }
+                );
             }
         }
-        function sourceRunner(obj, aCanvas, callback){
-
+        function sourceRunner(obj, aCanvas, who){
+            var testObj = eval(obj);
+            if(typeof(testObj) === "function"){
+                testObj(aCanvas);
+            }
+            else if(typeof(testObj) === "string"){
+                _w[testObj](aCanvas);
+            }
+            whenDone(who);
         }
         if(test.firstCanvas.src){
-            sourceLoader(test.firstCanvas, a);
+            sourceLoader(test.firstCanvas, a, "first");
         }
-        else{
-            sourceRunner(test.firstCanvas.run, a);
+        else if(test.firstCanvas.run){
+            sourceRunner(test.firstCanvas.run, a, "first");
         }
         if(test.secondCanvas.src){
-            sourceLoader(test.secondCanvas, b);
+            sourceLoader(test.secondCanvas, b, "second");
         }
-        else{
-            sourceRunner(test.secondCanvas, b);
-        }
-    }
-    function injectImage(aCanvas, url, callback){
-        var ctx = aCanvas.getContext("2d");
-        var img = new Image();
-        img.onload = function(){
-            ctx.drawImage(img, 0, 0, img.width, img.height);
-            callback();
-        }
-        img.src = url;
-    }
-    function injectFunction(aCanvas, run, callback){
-        var testObj = eval(run);
-        if(typeof(testObj) === "function"){
-            callback("curr", testObj, aCanvas);
-        }
-        else if(typeof(testObj) === "string"){
-            callback("curr", _w[testObj], aCanvas); 
+        else if(test.secondCanvas.run){
+            sourceRunner(test.secondCanvas.run, b, "second");
         }
     }
     function createDiv(parent, id){
@@ -165,9 +167,25 @@ var sundae = {};
         getJSON("resources/tests.json", setupTestSuites); 
     }
     //Global Utility Functions
-    function getJSON(src, callback){
+    function isLoaded(src){
         if(_loadedDeps.indexOf(src) == -1){
             _loadedDeps.push(src);
+            return false;
+        }
+        else
+            return true;
+    }
+    function getImage(aCanvas, url, callback){
+        var ctx = aCanvas.getContext("2d");
+        var img = new Image();
+        img.onload = function(){
+            ctx.drawImage(img, 0, 0, img.width, img.height);
+            callback();
+        }
+        img.src = url;
+    }
+    function getJSON(src, callback){
+        if(!isLoaded(src)){
             var r = new XMLHttpRequest();
             r.open("GET", src, true);
             r.overrideMimeType("application/json");
@@ -184,8 +202,7 @@ var sundae = {};
         }
     }
     function getScript(src, callback){
-        if(_loadedDeps.indexOf(src) == -1){
-            _loadedDeps.push(src);
+        if(!isLoaded(src)){
             var s = _w.document.createElement('script');
             s.type = 'text/javascript';
             s.onload = function(){
@@ -226,7 +243,7 @@ var sundae = {};
             return null;
         }
     }
-    function compare(a, b, c){
+    function compareCanvas(a, b, c){
         var failed = false;
         var valueEpsilon = _epsilon * 255;
         //Get pixel arrays from canvases
