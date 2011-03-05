@@ -38,7 +38,7 @@ var sundae = {};
         getTests();     
     };
     function reportResult(r,t){
-        r.innerHTML = ( "[" + t.firstCanvas.time + "ms] vs " +
+        r.innerHTML = ( t.name + ": [" + t.firstCanvas.time + "ms] vs " +
                         "[" + t.secondCanvas.time + "ms]");
     }
     function setupTest(test){
@@ -284,24 +284,18 @@ var sundae = {};
             var cCtx = c.getContext('2d');
             var cPix = cCtx.createImageData(c.width, c.height);
             var len = bPix.length;
-            var col = 0;
-            var row = (4 * c.width * c.height) - (4 * c.width);
-            for (var j = 0; j < len; j += 4, col+=4){
-                if(col === 4 * c.width){
-                    col = 0;
-                    row -= 4 * c.width;
-                }
-                if (Math.abs(bPix[row+col] - aPix[j]) < valueEpsilon  &&
-                    Math.abs(bPix[row+col + 1] - aPix[j+ 1]) < valueEpsilon &&
-                    Math.abs(bPix[row+col + 2] - aPix[j + 2]) < valueEpsilon &&
-                    Math.abs(bPix[row+col + 3] - aPix[j + 3]) < valueEpsilon){
+            for (var j=0; j < len; j+=4){
+                if (Math.abs(bPix[j] - aPix[j]) < valueEpsilon  &&
+                    Math.abs(bPix[j + 1] - aPix[j + 1]) < valueEpsilon &&
+                    Math.abs(bPix[j + 2] - aPix[j + 2]) < valueEpsilon &&
+                    Math.abs(bPix[j + 3] - aPix[j + 3]) < valueEpsilon){
                     cPix.data[j] = cPix.data[j+1] = cPix.data[j+2] = cPix.data[j+3] = 0;
                 } //Pixel difference in c
-                else {
+                else{
                     cPix.data[j] = 255;
                     cPix.data[j+1] = cPix.data[j+2] = 0;
                     cPix.data[j+3] = 255;
-                    failed = true;
+                    failed = true;                 
                 }
             }
             //Display pixel difference in _c

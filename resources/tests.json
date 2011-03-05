@@ -2,7 +2,7 @@
     "testSuite": [{ 
         "dependancyURL": "resources/test_1.js",
         "test": [{
-            "name": "First Test!",
+            "name": "Load test 1",
             "firstCanvas" : {
                 "src" : { "url" : "resources/default.png", "type" : "image" }
             },
@@ -10,9 +10,9 @@
                 "run" : "testOne" 					
             }
         },{
-            "name": "Second Test!",
+            "name": "Load test 2",
             "firstCanvas" : {
-                "src" : { "url" : "resources/default2.png", "type" : "image" }
+                "src" : { "url" : "resources/default.png", "type" : "image" }
             },
             "secondCanvas" : {
                 "run" : "function (canvas) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); }" 					
@@ -21,7 +21,7 @@
     },{ 
         "dependancyURL": ["resources/test_2a.js", "resources/test_2b.js"],
         "test": [{
-            "name": "Third Test!",
+            "name": "Load test 3",
             "firstCanvas" : {
                 "run" : "testTwo" 
             },
@@ -29,7 +29,7 @@
                 "src" : { "url" : "resources/default.png", "type" : "image" }
             }
         },{
-            "name": "Fourth Test!",
+            "name": "Load test 4",
             "firstCanvas" : {
                 "src" : { "url" : "resources/test_4.js", "type" : "json" },
                 "run" : "testFour" 
@@ -38,13 +38,79 @@
                 "run" : "function (canvas) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); }"					
             }
         },{
-            "name": "Fifth Test!",
+            "name": "Load test 5",
             "firstCanvas" : {
                 "src" : { "url" : "resources/test_5.js", "type" : "script" },
                 "run" : "testFive" 
             },
             "secondCanvas" : {
                 "run" : "function (canvas) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); }"					
+            }
+        }]
+    },{
+        "test": [{
+            "name": "Known Pass 1",
+            "firstCanvas": {
+                "src" : { "url" : "resources/default2.png", "type" : "image"}
+            },
+            "secondCanvas": {
+                "src" : { "url" : "resources/default2.png", "type" : "image"}
+            }
+        },{
+            "name": "Known Pass 2",
+            "firstCanvas": {
+                "run": "function (canvas) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(70, 85, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); }"
+            },
+            "secondCanvas": {
+                "run": "function (canvas) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(70, 85, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); }"
+            }
+        },{
+            "name": "Known Fail 1",
+            "firstCanvas": {
+                "src" : { "url" : "resources/default3.png", "type" : "image"}
+            },
+            "secondCanvas": {
+                "src" : { "url" : "resources/default4.png", "type" : "image"}
+            }
+        },{
+            "name": "Known Fail 2",
+            "firstCanvas": {
+                "src" : { "url" : "resources/default2.png", "type" : "image"}
+            },
+            "secondCanvas": {
+                "src" : { "url" : "resources/default4.png", "type" : "image"}
+            }
+        },{
+            "name": "Known Fail 3",
+            "firstCanvas": {
+                "src" : { "url" : "resources/default2.png", "type" : "image"}
+            },
+            "secondCanvas": {
+                "src" : { "url" : "resources/default.png", "type" : "image"}
+            }
+        },{
+            "name": "Known Fail 4",
+            "firstCanvas": {
+                "run": "function (canvas) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(70, 85, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); }"
+            },
+            "secondCanvas": {
+                "run": "function (canvas) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 150, 150, 1); gl.clear(gl.COLOR_BUFFER_BIT); }"
+            }
+        },{
+            "name": "Known Fail 5",
+            "firstCanvas": {
+                "src" : { "url" : "resources/default.png", "type" : "image"}
+            },
+            "secondCanvas": {
+                "run": "function (canvas) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 200, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); }"
+            }
+        },{
+            "name": "Known Fail 6",
+            "firstCanvas": {
+                "run": "function (canvas) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); }"
+            },
+            "secondCanvas": {
+                "src" : { "url" : "resources/default2.png", "type" : "image"}
             }
         }]
     }]
