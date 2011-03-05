@@ -13,6 +13,7 @@ var sundae = {};
     var _tag = "a";
     var _sigma = 2;
     var _epsilon = 0.05;
+    var _delay = 0;
     var _loadedDeps = [];
 
     sundae.setBlurRadius = function(s){
@@ -27,13 +28,18 @@ var sundae = {};
         if(t)
             _tag = t;
     };
-    sundae.init = function(){
+    sundae.setDelay = function(d){
+        if(d)
+            _delay = d;
+    };
+    sundae.init = function(){    
         setupKernel();
         setupBody();
         getTests();     
     };
     function reportResult(r,t){
-        r.innerHTML = (" [" + t + "ms]");
+        r.innerHTML = ( "[" + t.firstCanvas.time + "ms] vs " +
+                        "[" + t.secondCanvas.time + "ms]");
     }
     function setupTest(test){
         var name = test.name || "default";
@@ -42,10 +48,12 @@ var sundae = {};
         var a = createCanvas(d, name + "-first", 100, 100);
         var b = createCanvas(d, name + "-second", 100, 100);
         var c = createCanvas(d, name + "-diff", 100, 100);
-        var t = 0;
-        function runTest(){
+        test.firstCanvas.time = 0;
+        test.secondCanvas.time = 0;
+        function runTest(who, func){
             var startTime = (new Date).getTime();
-            t = (new Date).getTime() - startTime;
+            func();
+            test[who + "Canvas"].time = (new Date).getTime() - startTime;
         }
         var isDone = {"first" : false, "second" : false};
         var whenDone = function(who){
@@ -54,7 +62,13 @@ var sundae = {};
                 //if Pix == null error
                 //about:config
                 //security.fileuri.strict_origin_policy == false
-                compareCanvas(a, b, c);
+                reportResult(r, test);
+                _w.setTimeout(
+                    function(){
+                        compareCanvas(a, b, c);
+                    }, _delay
+                );
+
             }
         };
         function sourceLoader(obj, aCanvas, who){
@@ -68,7 +82,11 @@ var sundae = {};
             else if(obj.src.type === "script"){
                 getScript(obj.src.url, 
                     function(){
-                        _w[obj.run](aCanvas);
+                        runTest(who,
+                            function(){
+                                _w[obj.run](aCanvas);
+                            }
+                        );
                         whenDone(who);
                     }
                 );
@@ -84,10 +102,18 @@ var sundae = {};
         function sourceRunner(obj, aCanvas, who){
             var testObj = eval(obj);
             if(typeof(testObj) === "function"){
-                testObj(aCanvas);
+                runTest(who, 
+                    function(){
+                        testObj(aCanvas);
+                    }
+                );
             }
             else if(typeof(testObj) === "string"){
-                _w[testObj](aCanvas);
+                runTest(who, 
+                    function(){
+                        _w[testObj](aCanvas);
+                    }
+                );
             }
             whenDone(who);
         }
@@ -205,7 +231,7 @@ var sundae = {};
             s.type = 'text/javascript';
             s.onload = function(){
                 callback();
-                //_w.document.head.removeChild(s);
+                _w.document.head.removeChild(s);
             };
             s.src = src;
             _w.document.head.appendChild(s);
