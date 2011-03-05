@@ -43,16 +43,15 @@ var sundae = {};
         var b = createCanvas(d, name + "-second", 100, 100);
         var c = createCanvas(d, name + "-diff", 100, 100);
         var t = 0;
-        function runTest(func, aCanvas){
+        function runTest(){
             var startTime = (new Date).getTime();
-            func(aCanvas);
             t = (new Date).getTime() - startTime;
         }
         var isDone = {"first" : false, "second" : false};
         var whenDone = function(who){
             isDone[who] = true;
             if(isDone["first"] == true && isDone["second"] == true){
-                //if aPix == null error
+                //if Pix == null error
                 //about:config
                 //security.fileuri.strict_origin_policy == false
                 compareCanvas(a, b, c);
@@ -62,7 +61,7 @@ var sundae = {};
             if(obj.src.type === "image"){
                 getImage(aCanvas, obj.src.url, 
                     function(){
-                        whenDone(who)
+                        whenDone(who);
                     }
                 );    
             }
@@ -77,8 +76,7 @@ var sundae = {};
             else if(obj.src.type === "json"){
                 getJSON(obj.src.url,
                     function(data){
-                        data[obj.run](aCanvas);
-                        whenDone(who);
+                        sourceRunner(data[obj.run], aCanvas, who);
                     }
                 );
             }
@@ -207,7 +205,7 @@ var sundae = {};
             s.type = 'text/javascript';
             s.onload = function(){
                 callback();
-                _w.document.head.removeChild(s);
+                //_w.document.head.removeChild(s);
             };
             s.src = src;
             _w.document.head.appendChild(s);
@@ -247,8 +245,11 @@ var sundae = {};
         var failed = false;
         var valueEpsilon = _epsilon * 255;
         //Get pixel arrays from canvases
-        var aPix = getPixels(a, false); 
-        var bPix = getPixels(b, true);
+        var isWebgl = function(aCanvas){
+            return aCanvas.getContext('experimental-webgl') ? true : false;
+        };
+        var aPix = getPixels(a, isWebgl(a)); 
+        var bPix = getPixels(b, isWebgl(b));
         //Blur pixel arrays
         //aPix = blur(aPix, aPix.width, aPix.height); 
         //bPix = blur(bPix, bPix.width, bPix.height);
