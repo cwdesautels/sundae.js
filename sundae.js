@@ -15,22 +15,35 @@ var sundae = {};
     var _epsilon = 0.05;
     var _delay = 0;
     var _loadedDeps = [];
-
+    var _worker  = new Worker("resources/compare.js");
+    _worker.onerror = function (event) {
+        throw event.message;
+    };
+    _worker.onmessage = function (event) {
+        var obj = event.data;
+        var c = _w.document.getElementById(obj.id);
+        var cCtx = c.getContext('2d');
+        var img = cCtx.getImageData(0, 0, c.width, c.height);
+        for(var i = 0, len = obj.pix.length; i < len; i++){
+            img.data[i] = obj.pix[i];
+        }
+        cCtx.putImageData(img, 0, 0);
+    };
     sundae.setBlurRadius = function(s){
         if(s)
-            _sigma = s;
+            _sigma = +s;
     };
     sundae.setTolerance = function(e){
         if(e)
-            _epsilon = e;
+            _epsilon = +e;
     };
     sundae.setTestTag = function(t){
         if(t)
-            _tag = t;
+            _tag = '' + t;
     };
     sundae.setDelay = function(d){
         if(d)
-            _delay = d;
+            _delay = +d;
     };
     sundae.init = function(){    
         setupKernel();
@@ -38,8 +51,7 @@ var sundae = {};
         getTests();     
     };
     function reportResult(r,t){
-        r.innerHTML = ( t.name + ": [" + t.firstCanvas.time + "ms] vs " +
-                        "[" + t.secondCanvas.time + "ms]");
+        r.innerHTML = ( t.name + ": [" + t.firstCanvas.time + "ms] vs " + "[" + t.secondCanvas.time + "ms]");
     }
     function setupTest(test){
         var name = test.name || "default";
@@ -63,12 +75,17 @@ var sundae = {};
                 //about:config
                 //security.fileuri.strict_origin_policy == false
                 reportResult(r, test);
+                var pix = {};
+                pix.a = getPixels(a, isWebgl(a));
+                pix.b = getPixels(b, isWebgl(b));
+                pix.c = getPixels(c, false); 
+                pix.id = c.id;
+                pix.eps = _epsilon * 255;
                 _w.setTimeout(
                     function(){
-                        compareCanvas(a, b, c);
+                        _worker.postMessage(pix);
                     }, _delay
                 );
-
             }
         };
         function sourceLoader(obj, aCanvas, who){
@@ -191,6 +208,17 @@ var sundae = {};
         getJSON("resources/tests.json", setupTestSuites); 
     }
     //Global Utility Functions
+    function isWebgl(aCanvas){
+        var contexts = ["webgl","experimental-webgl","moz-webgl","webkit-3d"];
+        var rc = false;
+        for (var i = 0; !rc && i < contexts.length; i++){
+            try{
+                rc = aCanvas.getContext(contexts[i]);
+            }
+            catch(e){}
+        }
+        return rc;
+    }
     function isLoaded(src){
         if(_loadedDeps.indexOf(src) == -1){
             _loadedDeps.push(src);
@@ -265,50 +293,6 @@ var sundae = {};
         } 
         catch (e) {
             return null;
-        }
-    }
-    function compareCanvas(a, b, c){
-        var failed = false;
-        var valueEpsilon = _epsilon * 255;
-        //Get pixel arrays from canvases
-        var isWebgl = function(aCanvas){
-            return aCanvas.getContext('experimental-webgl') ? true : false;
-        };
-        var aPix = getPixels(a, isWebgl(a)); 
-        var bPix = getPixels(b, isWebgl(b));
-        //Blur pixel arrays
-        //aPix = blur(aPix, aPix.width, aPix.height); 
-        //bPix = blur(bPix, bPix.width, bPix.height);
-        if(aPix.length === bPix.length){
-            //Compare pixel arrays
-            var cCtx = c.getContext('2d');
-            var cPix = cCtx.createImageData(c.width, c.height);
-            var len = bPix.length;
-            for (var j=0; j < len; j+=4){
-                if (Math.abs(bPix[j] - aPix[j]) < valueEpsilon  &&
-                    Math.abs(bPix[j + 1] - aPix[j + 1]) < valueEpsilon &&
-                    Math.abs(bPix[j + 2] - aPix[j + 2]) < valueEpsilon &&
-                    Math.abs(bPix[j + 3] - aPix[j + 3]) < valueEpsilon){
-                    cPix.data[j] = cPix.data[j+1] = cPix.data[j+2] = cPix.data[j+3] = 0;
-                } //Pixel difference in c
-                else{
-                    cPix.data[j] = 255;
-                    cPix.data[j+1] = cPix.data[j+2] = 0;
-                    cPix.data[j+3] = 255;
-                    failed = true;                 
-                }
-            }
-            //Display pixel difference in _c
-            if(failed){
-                cCtx.putImageData(cPix, 0, 0);
-            }
-            else{
-                cCtx.fillStyle = "rgb(0,255,0)";
-                cCtx.fillRect (0, 0, c.width, c.height);
-            }
-        }
-        else{
-            failed = true;
         }
     }
     function setupKernel() {
