@@ -15,11 +15,11 @@ var sundae = {};
     var _epsilon = 0.05;
     var _delay = 0;
     var _loadedDeps = [];
-    var _worker  = new Worker("resources/compare.js");
-    _worker.onerror = function (event) {
+    var _compareWorker = new Worker("resources/compare.js");
+    _compareWorker.onerror = function (event) {
         throw event.message;
     };
-    _worker.onmessage = function (event) {
+    _compareWorker.onmessage = function (event) {
         var obj = event.data;
         var c = _w.document.getElementById(obj.id);
         var cCtx = c.getContext('2d');
@@ -83,7 +83,7 @@ var sundae = {};
                 pix.eps = _epsilon * 255;
                 _w.setTimeout(
                     function(){
-                        _worker.postMessage(pix);
+                        _compareWorker.postMessage(pix);
                     }, _delay
                 );
             }
