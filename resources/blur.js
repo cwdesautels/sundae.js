@@ -24,7 +24,7 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 */
 onerror = function (event) {
-    throw event.message;
+    throw "compare worker encountered an error! - " + event.message;
 };
 onmessage = function (event) {
     postMessage(event.data);

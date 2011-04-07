@@ -1,28 +1,21 @@
-var done, pix;
-var _blurWorkerA = new Worker("blur.js");
-var _blurWorkerB = new Worker("blur.js");
-_blurWorkerA.onerror = _blurWorkerB.onerror = function (event) {
+var pix;
+var _blurWorker = new Worker("blur.js");
+_blurWorker.onerror = function (event) {
     throw event.message;
 };
-_blurWorkerA.onmessage = _blurWorkerB.onmessage = function (event) {
-    whenDone();
+_blurWorker.onmessage = function (event) {
+  //comparePixels();
+  //throw "id - " + pix.id;
 };
 onerror = function (event) {
-    throw event.message;
+    throw "compare worker encountered an error! - " + event.message;
 };
 onmessage = function (event) {
     done = 0;
     pix = event.data;
+    _blurWorker.postMessage(0);
     comparePixels();
-    _blurWorkerA.postMessage(0);
-    _blurWorkerB.postMessage(0);
 };
-function whenDone() {
-    done++;
-    //if (done > 0){
-        //comparePixels();
-    //}
-}
 function comparePixels() {
     var failed = false;
     if (pix.a.length === pix.b.length) {

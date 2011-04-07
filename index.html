@@ -1,22 +1,32 @@
 ﻿<!doctype html>
 <html>
   <head>
-    <meta http-equiv="pragma" content="no-cache"/>
     <title>Sundae</title>
     <script type="text/javascript" src="sundae.js" ></script>
   </head>
   <body>
     <h1>Sundae Ref Test Runner</h1>
     <h3>Settings</h3>
-    <div id="setup">Run Tests: 
-      <select id="type">
-        <option value="a" selected="selected">All</option>
-        <option value="s">Static</option>
-        <option value="c">Calibration</option>
-      </select><br/>
-      Blur Radius: <input type="text" size="2" id="sigma" value="2"/><br/>
-      Tolerance: <input type="text" size="2" id="epsilon" value="5"/>%<br/>
-      Time Delay: <input type="text" size="4" id="delay" value="0"/>ms<br/>
+    <div id="setup">
+      <table><tr>
+        <td>Run Tests:</td>
+        <td>
+          <select id="type">
+            <option value="a" selected="selected">All</option>
+            <!--<option value="s">Static</option>
+            <option value="c">Calibration</option>-->
+          </select>
+        </td>
+      </tr><tr>
+        <td>Blur Radius:</td>
+        <td><input type="text" size="2" id="sigma" value="2"/>px</td>
+      </tr><tr>
+        <td>Tolerance:</td>
+        <td><input type="text" size="2" id="epsilon" value="5"/>%</td>
+      </tr><tr>
+        <td>Time Delay:</td>
+        <td><input type="text" size="4" id="delay" value="0"/>ms</td>
+      </tr></table>
     </div>
     <script type="text/javascript">
             var d = document;
@@ -25,7 +35,6 @@
             b.setAttribute("value", "Begin Tests");
             b.setAttribute("onClick", "beginTester();");
             d.getElementById("setup").appendChild(b);
-
             function beginTester() {
                 //Optional Global Setters
                 sundae.setBlurRadius(d.getElementById("sigma").value);

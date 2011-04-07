@@ -16,9 +16,6 @@ var sundae = {};
     var _delay = 0;
     var _loadedDeps = [];
     var _compareWorker = new Worker("resources/compare.js");
-    _compareWorker.onerror = function (event) {
-        throw event.message;
-    };
     _compareWorker.onmessage = function (event) {
         var obj = event.data;
         var c = _w.document.getElementById(obj.id);
@@ -28,6 +25,10 @@ var sundae = {};
             img.data[i] = obj.pix[i];
         }
         cCtx.putImageData(img, 0, 0);
+    };
+    var _blurWorker = new Worker("resources/blur.js");
+    _blurWorker.onmessage = function (event) {
+    
     };
     sundae.setBlurRadius = function(s){
         if(s)
