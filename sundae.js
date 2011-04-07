@@ -34,8 +34,10 @@ var sundae = {};
             _sigma = +s;
     };
     sundae.setTolerance = function(e){
-        if(e)
-            _epsilon = +e;
+        if(e){
+            e = +e;
+            _epsilon = (e % 101) / 100;
+        }
     };
     sundae.setTestTag = function(t){
         if(t)
