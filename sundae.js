@@ -28,7 +28,7 @@ var sundae = {};
     };
     var _blurWorker = new Worker("resources/blur.js");
     _blurWorker.onmessage = function (event) {
-    
+        _compareWorker.postMessage(event.data);
     };
     sundae.setBlurRadius = function(s){
         if(s)
@@ -48,8 +48,7 @@ var sundae = {};
         if(d)
             _delay = +d;
     };
-    sundae.init = function(){    
-        setupKernel();
+    sundae.init = function(){
         setupBody();
         getTests();     
     };
@@ -84,9 +83,11 @@ var sundae = {};
                 pix.c = getPixels(c, false); 
                 pix.id = c.id;
                 pix.eps = _epsilon * 255;
+                pix.sig = _sigma;
                 _w.setTimeout(
                     function(){
-                        _compareWorker.postMessage(pix);
+                        _blurWorker.postMessage(pix);
+                        //_compareWorker.postMessage(pix);
                     }, _delay
                 );
             }
@@ -297,57 +298,6 @@ var sundae = {};
         catch (e) {
             return null;
         }
-    }
-    function setupKernel() {
-        var ss = _sigma * _sigma;
-        var factor = 2 * Math.PI * ss;
-        _kernel = new Array();
-        _kernel.push(new Array());
-        var i = 0, j;
-        do {
-            var g = Math.exp(-(i * i) / (2 * ss)) / factor;
-            if (g < 1e-3) break;
-            _kernel[0].push(g);
-            ++i;
-        } while (i < 7);
-        _kernelSize = i;
-        for (j = 1; j < _kernelSize; ++j) {
-            _kernel.push(new Array());
-            for (i = 0; i < _kernelSize; ++i) {
-                var g = Math.exp(-(i * i + j * j) / (2 * ss)) / factor;
-                _kernel[j].push(g);
-            }
-        }
-        _kernelSum = 0;
-        for (j = 1 - _kernelSize; j < _kernelSize; ++j) {
-            for (i = 1 - _kernelSize; i < _kernelSize; ++i) {
-                _kernelSum += _kernel[Math.abs(j)][Math.abs(i)];
-            }
-        }
-    }
-    function blur(data, width, height) {
-        var len = data.length;
-        var newData = new Array(len);
-        for (var y = 0; y < height; ++y) {
-            for (var x = 0; x < width; ++x) {
-                var r = 0, g = 0, b = 0, a = 0;
-                for (j = 1 - _kernelSize; j < _kernelSize; ++j) {
-                    if (y + j < 0 || y + j >= height) continue;
-                    for (i = 1 - _kernelSize; i < _kernelSize; ++i) {
-                        if (x + i < 0 || x + i >= width) continue;
-                        r += data[4 * ((y + j) * width + (x + i)) + 0] * _kernel[Math.abs(j)][Math.abs(i)];
-                        g += data[4 * ((y + j) * width + (x + i)) + 1] * _kernel[Math.abs(j)][Math.abs(i)];
-                        b += data[4 * ((y + j) * width + (x + i)) + 2] * _kernel[Math.abs(j)][Math.abs(i)];
-                        a += data[4 * ((y + j) * width + (x + i)) + 3] * _kernel[Math.abs(j)][Math.abs(i)];
-                    }
-                }
-                newData[4 * (y * width + x) + 0] = r / _kernelSum;
-                newData[4 * (y * width + x) + 1] = g / _kernelSum;
-                newData[4 * (y * width + x) + 2] = b / _kernelSum;
-                newData[4 * (y * width + x) + 3] = a / _kernelSum;               
-            }
-        }
-        return newData;
     }
     // Opera createImageData fix
     try {

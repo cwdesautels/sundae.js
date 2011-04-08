@@ -1,22 +1,14 @@
-var pix;
-var _blurWorker = new Worker("blur.js");
-_blurWorker.onerror = function (event) {
-    throw event.message;
-};
-_blurWorker.onmessage = function (event) {
-  //comparePixels();
-  //throw "id - " + pix.id;
-};
-onerror = function (event) {
-    throw "compare worker encountered an error! - " + event.message;
-};
 onmessage = function (event) {
-    done = 0;
-    pix = event.data;
-    _blurWorker.postMessage(0);
-    comparePixels();
+    /*var _blurWorker = new Worker("blur.js");
+    (function(pix, worker){
+        worker.onmessage = function (event){
+            comparePixels(pix);
+        };
+        worker.postMessage(1);
+    })(event.data, _blurWorker);*/
+    comparePixels(event.data);
 };
-function comparePixels() {
+function comparePixels(pix) {
     var failed = false;
     if (pix.a.length === pix.b.length) {
         var j, len = pix.b.length;
