@@ -4,6 +4,7 @@
         "test": [{
             "name": "Load test 1",
             "note": "this is a meaninful note",
+            "tag": "calibration",
             "firstCanvas" : {
                 "src" : { "url" : "resources/default.png", "type" : "image" }
             },

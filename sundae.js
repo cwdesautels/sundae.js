@@ -10,7 +10,7 @@ var sundae = {};
 (function (_w, undef) {
     //Enviroment variables
     var _kernel, _kernelSize, _kernelSum;
-    var _tag = "a";
+    var _tag = "all";
     var _sigma = 2;
     var _epsilon = 0.05;
     var _delay = 0;
@@ -178,7 +178,8 @@ var sundae = {};
         };
         var setupTests = function(tests){
             for(var j = 0; j < tests.length; j++){
-                setupTest(tests[j]);
+                if(_tag == "all" || (_tag != "all" && tests[j].tag && tests[j].tag == _tag))
+                    setupTest(tests[j]);
             }
         };
         var setupTestSuites = function(data){

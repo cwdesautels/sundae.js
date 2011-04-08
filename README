@@ -24,6 +24,7 @@
                 {
                     "name": "string",
                     "note": "string",
+                    "tag": "string",
                     "firstCanvas" : {
                         "src" : { 
                             "url" : "fileUrl", 

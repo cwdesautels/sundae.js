@@ -12,9 +12,7 @@
         <td>Run Tests:</td>
         <td>
           <select id="type">
-            <option value="a" selected="selected">All</option>
-            <!--<option value="s">Static</option>
-            <option value="c">Calibration</option>-->
+            <option value="all" selected="selected">All</option>
           </select>
         </td>
       </tr><tr>
@@ -26,7 +24,9 @@
       </tr><tr>
         <td>Blur Radius:</td>
         <td><input type="text" size="2" id="sigma" value="2"/>px</td>
-        <td><input type="checkbox" id="showBlur"/>Show Blur</td>
+      </tr><tr>
+        <td>Show Blur:</td>
+        <td><input type="checkbox" id="showBlur"/></td>
       </tr></table>
     </div>
     <script type="text/javascript">
@@ -36,6 +36,18 @@
             b.setAttribute("value", "Begin Tests");
             b.setAttribute("onClick", "beginTester();");
             d.getElementById("setup").appendChild(b);
+            getJSON("resources/tests.json", function (data){
+                var t = d.getElementById("type");;
+                for(var i = 0; data.testSuite && i < data.testSuite.length; i++){
+                    for(var j = 0; data.testSuite[i].test && j < data.testSuite[i].test.length; j++){
+                        if(data.testSuite[i].test[j].tag){
+                            var opt = d.createElement("option");
+                            opt.text = opt.value = data.testSuite[i].test[j].tag;
+                            t.options.add(opt);
+                        }
+                    }
+                }
+            });  
             function beginTester() {
                 //Optional Global Setters
                 sundae.setBlurRadius(d.getElementById("sigma").value);
@@ -45,6 +57,21 @@
                 sundae.setShowBlur(d.getElementById("showBlur").checked);
                 //Start tester
                 sundae.init();  
+            }
+            //Duplicate of private function within library
+            function getJSON(src, callback){
+                var r = new XMLHttpRequest();
+                r.open("GET", src, true);
+                r.overrideMimeType("application/json");
+                r.onload = function(){
+                    try{
+                        callback(JSON.parse(r.responseText));
+                    }
+                    catch(e){
+                        callback(eval("(" + r.responseText + ")"));
+                    }
+                };
+                r.send(null);
             }
     </script>
   </body>
