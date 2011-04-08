@@ -15,6 +15,7 @@ var sundae = {};
     var _epsilon = 0.05;
     var _delay = 0;
     var _loadedDeps = [];
+    var _container;
     var _compareWorker = new Worker("resources/compare.js");
     _compareWorker.onmessage = function (event) {
         var obj = event.data;
@@ -49,15 +50,18 @@ var sundae = {};
             _delay = +d;
     };
     sundae.init = function(){
-        setupBody();
+        //Tester starting point
+        _container = createDiv(_w.document.body, "sundae");
         getTests();     
     };
     function reportResult(r,t){
-        r.innerHTML = ( t.name + ": [" + t.firstCanvas.time + "ms] vs " + "[" + t.secondCanvas.time + "ms]");
+        r.innerHTML = t.name + ": [" + t.firstCanvas.time + "ms] vs " + "[" + t.secondCanvas.time + "ms]";
+        if(t.note)
+          r.innerHTML += " - " + t.note;
     }
     function setupTest(test){
         var name = test.name || "default";
-        var d = createDiv(_w.document.getElementById("sundae"), name);
+        var d = createDiv(_container, name);
         var r = createDiv(d, name + "-title");
         var a = createCanvas(d, name + "-first", 100, 100);
         var b = createCanvas(d, name + "-second", 100, 100);
@@ -151,23 +155,6 @@ var sundae = {};
             sourceRunner(test.secondCanvas.run, b, "second");
         }
     }
-    function createDiv(parent, id){
-        var d = _w.document.createElement("div");
-        d.id = id;
-        parent.appendChild(d);
-        return d;
-    }
-    function createCanvas(parent, id, h, w){
-        var c = _w.document.createElement("canvas");
-        c.id = id;
-        c.width = w;
-        c.height = h;
-        parent.appendChild(c);
-        return c;
-    }
-    function setupBody(){
-        createDiv(_w.document.body, "sundae");
-    }
     function getTests(){
         var loadDeps = function(deps, callback){
             var totalLen = 0, totalLoaded = 0;
@@ -212,6 +199,20 @@ var sundae = {};
         getJSON("resources/tests.json", setupTestSuites); 
     }
     //Global Utility Functions
+    function createDiv(parent, id){
+        var d = _w.document.createElement("div");
+        d.id = id;
+        parent.appendChild(d);
+        return d;
+    }
+    function createCanvas(parent, id, h, w){
+        var c = _w.document.createElement("canvas");
+        c.id = id;
+        c.width = w;
+        c.height = h;
+        parent.appendChild(c);
+        return c;
+    }
     function isWebgl(aCanvas){
         var contexts = ["webgl","experimental-webgl","moz-webgl","webkit-3d"];
         var rc = false;

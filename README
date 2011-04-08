@@ -23,6 +23,7 @@
             "test": [
                 {
                     "name": "string",
+                    "note": "string",
                     "firstCanvas" : {
                         "src" : { 
                             "url" : "fileUrl", 

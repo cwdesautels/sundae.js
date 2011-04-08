@@ -3,6 +3,7 @@
         "dependancyURL": "resources/test_1.js",
         "test": [{
             "name": "Load test 1",
+            "note": "this is a meaninful note",
             "firstCanvas" : {
                 "src" : { "url" : "resources/default.png", "type" : "image" }
             },
