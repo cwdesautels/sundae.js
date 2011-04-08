@@ -34,5 +34,5 @@ function comparePixels(pix) {
             pix.c[j + 1] = pix.c[j+3] = 255;
         }
     }
-    postMessage({ pix: pix.c, id: pix.id });
+    postMessage(pix);
 }

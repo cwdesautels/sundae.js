@@ -16,16 +16,14 @@ var sundae = {};
     var _delay = 0;
     var _loadedDeps = [];
     var _container;
+    var _showBlur = false;
     var _compareWorker = new Worker("resources/compare.js");
     _compareWorker.onmessage = function (event) {
-        var obj = event.data;
-        var c = _w.document.getElementById(obj.id);
-        var cCtx = c.getContext('2d');
-        var img = cCtx.getImageData(0, 0, c.width, c.height);
-        for(var i = 0, len = obj.pix.length; i < len; i++){
-            img.data[i] = obj.pix[i];
+        if(_showBlur){
+            putPixels(event.data.aId, event.data.a);
+            putPixels(event.data.bId, event.data.b);
         }
-        cCtx.putImageData(img, 0, 0);
+        putPixels(event.data.cId, event.data.c);
     };
     var _blurWorker = new Worker("resources/blur.js");
     _blurWorker.onmessage = function (event) {
@@ -33,13 +31,16 @@ var sundae = {};
     };
     sundae.setBlurRadius = function(s){
         if(s)
-            _sigma = +s;
+            s = Math.abs(+s);
     };
     sundae.setTolerance = function(e){
         if(e){
-            e = +e;
+            e = Math.abs(+e);
             _epsilon = (e % 101) / 100;
         }
+    };
+    sundae.setShowBlur = function (b){
+        _showBlur = !!b;
     };
     sundae.setTestTag = function(t){
         if(t)
@@ -47,7 +48,7 @@ var sundae = {};
     };
     sundae.setDelay = function(d){
         if(d)
-            _delay = +d;
+            _delay = Math.abs(+d);
     };
     sundae.init = function(){
         //Tester starting point
@@ -84,8 +85,10 @@ var sundae = {};
                 var pix = {};
                 pix.a = getPixels(a, isWebgl(a));
                 pix.b = getPixels(b, isWebgl(b));
-                pix.c = getPixels(c, false); 
-                pix.id = c.id;
+                pix.c = getPixels(c, false);
+                pix.aId = a.id;
+                pix.bId = b.id; 
+                pix.cId = c.id;
                 pix.eps = _epsilon * 255;
                 pix.sig = _sigma;
                 _w.setTimeout(
@@ -199,6 +202,21 @@ var sundae = {};
         getJSON("resources/tests.json", setupTestSuites); 
     }
     //Global Utility Functions
+    function putPixels(id, pixels){
+        var c = _w.document.getElementById(id);
+        if(isWebgl(c)){
+            var gl = c.getContext('experimental-webgl');
+            gl.texImage2D(gl.TEXTURE_2D, 0, 0, 0, c.width, c.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels); 
+        }
+        else {
+            var cCtx = c.getContext('2d');  
+            var img = cCtx.getImageData(0, 0, c.width, c.height);
+            for(var i = 0, len = pixels.length; i < len; i++){
+                img.data[i] = pixels[i];
+            }
+            cCtx.putImageData(img, 0, 0);
+        }
+    }
     function createDiv(parent, id){
         var d = _w.document.createElement("div");
         d.id = id;
