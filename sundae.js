@@ -25,13 +25,18 @@ var sundae = {};
         }
         putPixels(event.data.cId, event.data.c);
     };
-    var _blurWorker = new Worker("resources/blur.js");
-    _blurWorker.onmessage = function (event) {
+    var _blurWorkerA = new Worker("resources/blur.js");
+    _blurWorkerA.onmessage = function (event) {
         _compareWorker.postMessage(event.data);
     };
+    //var _blurWorkerB = new Worker("resources/blur.js");
+    //_blurWorkerB.onmessage = function (event) {
+    //    _compareWorker.postMessage(event.data);
+    //};
     var _kernelBuilder = new Worker("resources/kernel.js");
     _kernelBuilder.onmessage = function (event) {
-        _blurWorker.postMessage(event.data);
+        _blurWorkerA.postMessage(event.data);
+        //_blurWorkerB.postMessage(event.data);
     };
     sundae.setBlurRadius = function(s){
         if(s)
@@ -98,8 +103,6 @@ var sundae = {};
                 _w.setTimeout(
                     function(){
                         _kernelBuilder.postMessage(pix);
-                        //_blurWorker.postMessage(pix);
-                        //_compareWorker.postMessage(pix);
                     }, _delay
                 );
             }
