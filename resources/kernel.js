@@ -24,37 +24,46 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 */
 onmessage = function (event) {
-    blurPixels(event.data);
+    kernelBuilder(event.data);
 };
-function blurPixels(pix){
-    function blur(data, height, width) {
-        for (var y = 0; y < height; ++y) {
-            for (var x = 0; x < width; ++x) {
-                var r = 0, g = 0, b = 0, a = 0;
-                for (j = 1 - pix.kernelSize; j < pix.kernelSize; ++j) {
-                    if (y + j < 0 || y + j >= height) continue;
-                    for (i = 1 - pix.kernelSize; i < pix.kernelSize; ++i) {
-                        if (x + i < 0 || x + i >= width) continue;
-                        r += data[4 * ((y + j) * width + (x + i)) + 0] * pix.kernel[Math.abs(j)][Math.abs(i)];
-                        g += data[4 * ((y + j) * width + (x + i)) + 1] * pix.kernel[Math.abs(j)][Math.abs(i)];
-                        b += data[4 * ((y + j) * width + (x + i)) + 2] * pix.kernel[Math.abs(j)][Math.abs(i)];
-                        a += data[4 * ((y + j) * width + (x + i)) + 3] * pix.kernel[Math.abs(j)][Math.abs(i)];
-                    }
-                }
-                data[4 * (y * width + x) + 0] = r / pix.kernelSum;
-                data[4 * (y * width + x) + 1] = g / pix.kernelSum;
-                data[4 * (y * width + x) + 2] = b / pix.kernelSum;
-                data[4 * (y * width + x) + 3] = a / pix.kernelSum;
+function kernelBuilder(pix){
+    //Globals
+    var kernel, kernelSize, kernelSum;
+    //Utility Functions
+    function buildKernel() {
+        var ss = pix.sig * pix.sig;
+        var factor = 2 * Math.PI * ss;
+        kernel = [];
+        kernel.push([]);
+        var i = 0, j;
+        do {
+            var g = Math.exp(-(i * i) / (2 * ss)) / factor;
+            if (g < 1e-3) break;
+            kernel[0].push(g);
+            ++i;
+        } while (i < 7);
+        kernelSize = i;
+        for (j = 1; j < kernelSize; ++j) {
+            kernel.push([]);
+            for (i = 0; i < kernelSize; ++i) {
+                var g = Math.exp(-(i * i + j * j) / (2 * ss)) / factor;
+                kernel[j].push(g);
             }
         }
-        return data;
+        kernelSum = 0;
+        for (j = 1 - kernelSize; j < kernelSize; ++j) {
+            for (i = 1 - kernelSize; i < kernelSize; ++i) {
+                kernelSum += kernel[Math.abs(j)][Math.abs(i)];
+            }
+        }
     }
+    //Build kernel
     if(pix.sig){
-        //blur a 
-        pix.a = blur(pix.a, pix.height, pix.width);
-        //blur b
-        pix.b = blur(pix.b, pix.height, pix.width);
+        buildKernel();
+        pix.kernel = kernel;
+        pix.kernelSize = kernelSize;
+        pix.kernelSum = kernelSum;
     }
-    //done
+    //Throw the work somewhere else
     postMessage(pix);
 }

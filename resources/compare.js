@@ -1,11 +1,4 @@
 onmessage = function (event) {
-    /*var _blurWorker = new Worker("blur.js");
-    (function(pix, worker){
-        worker.onmessage = function (event){
-            comparePixels(pix);
-        };
-        worker.postMessage(1);
-    })(event.data, _blurWorker);*/
     comparePixels(event.data);
 };
 function comparePixels(pix) {

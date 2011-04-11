@@ -29,15 +29,17 @@ var sundae = {};
     _blurWorker.onmessage = function (event) {
         _compareWorker.postMessage(event.data);
     };
+    var _kernelBuilder = new Worker("resources/kernel.js");
+    _kernelBuilder.onmessage = function (event) {
+        _blurWorker.postMessage(event.data);
+    };
     sundae.setBlurRadius = function(s){
         if(s)
-            s = Math.abs(+s);
+            _sigma = Math.abs(+s);
     };
     sundae.setTolerance = function(e){
-        if(e){
-            e = Math.abs(+e);
-            _epsilon = (e % 101) / 100;
-        }
+        if(e)
+            _epsilon = (Math.abs(+e) % 101) / 100;
     };
     sundae.setShowBlur = function (b){
         _showBlur = !!b;
@@ -91,9 +93,12 @@ var sundae = {};
                 pix.cId = c.id;
                 pix.eps = _epsilon * 255;
                 pix.sig = _sigma;
+                pix.height = c.height;
+                pix.width = c.width;
                 _w.setTimeout(
                     function(){
-                        _blurWorker.postMessage(pix);
+                        _kernelBuilder.postMessage(pix);
+                        //_blurWorker.postMessage(pix);
                         //_compareWorker.postMessage(pix);
                     }, _delay
                 );
