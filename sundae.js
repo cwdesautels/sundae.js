@@ -38,6 +38,28 @@ var sundae = {};
         _blurWorkerA.postMessage(event.data);
         //_blurWorkerB.postMessage(event.data);
     };
+    var _pool = {};
+    _pool.getThread = function (){
+        var n = _pool.worker.length;
+        while(n--){
+            if(_pool.worker[n].status)
+                return _pool.worker[n];
+        }
+    };
+    _pool.setup = function (n){
+        _pool.worker = [];
+        var temp;
+        while (n--){
+            temp = new Worker();
+            temp.onmessage = function (event){
+                //Dom changing stuff
+            };
+            _pool.worker.push(temp);
+        }
+    };
+    _pool.recycle = function (n){
+        _pool.worker[n].status = true;
+    };
     sundae.setBlurRadius = function(s){
         if(s)
             _sigma = Math.abs(+s);
