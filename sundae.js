@@ -13,7 +13,8 @@ var sundae = {};
     var _tag = "all";
     var _sigma = 2;
     var _epsilon = 0.05;
-    var _delay = 0;
+    var _delay = 10;
+    var _numWorkers = 3;
     var _loadedDeps = [];
     var _container;
     var _showBlur = false;
@@ -39,6 +40,7 @@ var sundae = {};
         //_blurWorkerB.postMessage(event.data);
     };
     var _pool = {};
+    var _queue = [];
     _pool.getThread = function (){
         var n = _pool.worker.length;
         while(n--){
@@ -46,19 +48,36 @@ var sundae = {};
                 return _pool.worker[n];
         }
     };
-    _pool.setup = function (n){
+    _pool.start = function (n){
         _pool.worker = [];
         var temp;
+        var onmessage = function (event){
+            this.status = true;
+            if(_showBlur){
+                putPixels(event.data.aId, event.data.a);
+                putPixels(event.data.bId, event.data.b);
+            }
+            putPixels(event.data.cId, event.data.c);
+        };
         while (n--){
-            temp = new Worker();
-            temp.onmessage = function (event){
-                //Dom changing stuff
-            };
+            temp = new Worker("resources/slave.js");
+            temp.onmessage = onmessage;
+            temp.status = true;
             _pool.worker.push(temp);
         }
+        var worker, data;
+        _pool.id = _w.setInterval(
+            function (){
+            alert(_delay+1);
+                if(data = _queue.pop()){
+                    worker = _pool.getThread();
+                    worker.postmessage(data);
+                }
+            }, _delay
+        );
     };
-    _pool.recycle = function (n){
-        _pool.worker[n].status = true;
+    _pool.stop = function (){
+        _w.clearInterval(_pool.id);
     };
     sundae.setBlurRadius = function(s){
         if(s)
@@ -82,9 +101,11 @@ var sundae = {};
     sundae.init = function(){
         //Tester starting point
         _container = createDiv(_w.document.body, "sundae");
+        _pool.start(_numWorkers);
         getTests();     
     };
     function reportResult(r,t){
+        _pool.stop();
         r.innerHTML = t.name + ": [" + t.firstCanvas.time + "ms] vs " + "[" + t.secondCanvas.time + "ms]";
         if(t.note)
           r.innerHTML += " - " + t.note;
@@ -124,6 +145,7 @@ var sundae = {};
                 pix.width = c.width;
                 _w.setTimeout(
                     function(){
+                        //_queue.push(pix);
                         _kernelBuilder.postMessage(pix);
                     }, _delay
                 );
@@ -236,8 +258,8 @@ var sundae = {};
     function putPixels(id, pixels){
         var c = _w.document.getElementById(id);
         if(isWebgl(c)){
-            var gl = c.getContext('experimental-webgl');
-            gl.texImage2D(gl.TEXTURE_2D, 0, 0, 0, c.width, c.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels); 
+            //var gl = c.getContext('experimental-webgl');
+            //gl.texImage2D(gl.TEXTURE_2D, 0, 0, 0, c.width, c.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels); 
         }
         else {
             var cCtx = c.getContext('2d');  
