@@ -40,30 +40,29 @@ var sundae = {};
     var _pool = {};
     var _queue = {};
     _queue.setup = function (){
-        _queue.list = [];
+        var list = [];
         _queue.add = function(data){
             var worker = _pool.getThread();
             if(worker)
                 worker.postMessage(data);
             else
-                _queue.list.push(data);
+                list.push(data);
         };
         _queue.pop = function(){
-            return _queue.list.pop();
+            return list.pop();
         };
     };
-    _pool.getThread = function (){
-        var n = _pool.worker.length;
-        while (n--){
-            if(_pool.worker[n].status){
-                _pool.worker[n].status = false;
-                return _pool.worker[n].worker;
-            }
-        }
-    };
     _pool.setup = function (n){
-        _queue.setup();
-        _pool.worker = [];
+        var worker = [];
+        _pool.getThread = function (){
+            var n = worker.length;
+            while (n--){
+                if(worker[n].status){
+                    worker[n].status = false;
+                    return worker[n].worker;
+                }
+            }
+        };
         var temp;
         while (n--){
             temp = new Worker("resources/slave.js");
@@ -78,10 +77,10 @@ var sundae = {};
                 var data = _queue.pop();
                 if(data)
                     this.postMessage(data);
-                else if(_pool.worker[n])
-                    _pool.worker[n].status = true;
+                else if(worker[n])
+                    worker[n].status = true;
             };
-            _pool.worker.push({"worker":temp, "status":true});
+            worker.push({"worker":temp, "status":true});
         }
     };
     sundae.setBlurRadius = function(s){
@@ -106,6 +105,7 @@ var sundae = {};
     sundae.init = function(){
         //Tester starting point
         _container = createDiv(_w.document.body, "sundae");
+        _queue.setup();
         _pool.setup(_numWorkers);
         getTests();     
     };
