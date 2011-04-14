@@ -38,43 +38,43 @@ var sundae = {};
     var _container;
     var _showBlur = false;
     var _pool = {};
-    var _queue = [];
+    var _queue = new Array();
+    _queue.add = function(data){
+        var worker = _pool.getThread();
+        if(worker)
+            worker.postMessage(data);
+        else
+            this.push(data);
+    };
     _pool.getThread = function (){
         var n = _pool.worker.length;
         while(n--){
-            if(_pool.worker[n].status)
-                return _pool.worker[n];
+            if(_pool.worker[n].status){
+                _pool.worker[n].status = false;
+                return _pool.worker[n].worker;
+            }
         }
     };
-    _pool.start = function (n){
+    _pool.setup = function (n){
         _pool.worker = [];
         var temp;
         var onmessage = function (event){
-            this.status = true;
+            var pix = event.data;
             if(_showBlur){
-                putPixels(event.data.aId, event.data.a);
-                putPixels(event.data.bId, event.data.b);
+                putPixels(pix.aId, pix.a);
+                putPixels(pix.bId, pix.b);
             }
-            putPixels(event.data.cId, event.data.c);
+            putPixels(pix.cId, pix.c);
+            //Continue the process
+            var data = _queue.pop();
+            if(data)
+                this.postMessage(data);
         };
         while (n--){
             temp = new Worker("resources/slave.js");
             temp.onmessage = onmessage;
-            temp.status = true;
-            _pool.worker.push(temp);
+            _pool.worker.push({"worker":temp, "status":true});
         }
-        var worker, data;
-        _pool.id = _w.setInterval(
-            function (){
-                if(data = _queue.pop()){
-                    worker = _pool.getThread();
-                    worker.postMessage(data);
-                }
-            }, _delay
-        );
-    };
-    _pool.stop = function (){
-        _w.clearInterval(_pool.id);
     };
     sundae.setBlurRadius = function(s){
         if(s)
@@ -98,7 +98,7 @@ var sundae = {};
     sundae.init = function(){
         //Tester starting point
         _container = createDiv(_w.document.body, "sundae");
-        _pool.start(_numWorkers);
+        _pool.setup(_numWorkers);
         getTests();     
     };
     function reportResult(r,t){
@@ -113,12 +113,13 @@ var sundae = {};
         var a = createCanvas(d, name + "-first", 100, 100);
         var b = createCanvas(d, name + "-second", 100, 100);
         var c = createCanvas(d, name + "-diff", 100, 100);
-        test.firstCanvas.time = 0;
-        test.secondCanvas.time = 0;
+        test.firstCanvas.time = 5;
+        test.secondCanvas.time = 5;
         function runTest(who, func){
             var startTime = (new Date).getTime();
             func();
             test[who + "Canvas"].time = (new Date).getTime() - startTime;
+            whenDone(who);
         }
         var isDone = {"first" : false, "second" : false};
         var whenDone = function(who){
@@ -132,13 +133,13 @@ var sundae = {};
                 pix.aId = a.id;
                 pix.bId = b.id; 
                 pix.cId = c.id;
-                pix.eps = _epsilon * 255;
+                pix.eps = _epsilon;
                 pix.sig = _sigma;
                 pix.height = c.height;
                 pix.width = c.width;
                 _w.setTimeout(
                     function(){
-                        _queue.push(pix);
+                        _queue.add(pix);
                     }, _delay
                 );
             }
@@ -159,7 +160,6 @@ var sundae = {};
                                 _w[obj.run](aCanvas);
                             }
                         );
-                        whenDone(who);
                     }
                 );
             }
@@ -187,7 +187,6 @@ var sundae = {};
                     }
                 );
             }
-            whenDone(who);
         }
         if(test.firstCanvas.src){
             sourceLoader(test.firstCanvas, a, "first");

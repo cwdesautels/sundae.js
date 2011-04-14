@@ -24,7 +24,7 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 */
 onmessage = function (event) {
-    var kernel, kernelSize, kernelSum, pix = event.data;
+    var kernel, kernelSize, kernelSum, pix = event.data, eps = pix.eps*255;
     if(pix.sig){
         buildKernel();
         pix.a = blur(pix.a, pix.height, pix.width);
@@ -86,10 +86,10 @@ onmessage = function (event) {
         if (pix.a.length === pix.b.length) {
             var j, len = pix.b.length;
             for (j = 0; j < len; j += 4) {
-                if (Math.abs(pix.b[j] - pix.a[j]) <= pix.eps &&
-                    Math.abs(pix.b[j + 1] - pix.a[j + 1]) <= pix.eps &&
-                    Math.abs(pix.b[j + 2] - pix.a[j + 2]) <= pix.eps &&
-                    Math.abs(pix.b[j + 3] - pix.a[j + 3]) <= pix.eps) {
+                if (Math.abs(pix.b[j] - pix.a[j]) <= eps &&
+                    Math.abs(pix.b[j + 1] - pix.a[j + 1]) <= eps &&
+                    Math.abs(pix.b[j + 2] - pix.a[j + 2]) <= eps &&
+                    Math.abs(pix.b[j + 3] - pix.a[j + 3]) <= eps) {
                     pix.c[j] = pix.c[j + 1] = pix.c[j + 2] = pix.c[j + 3] = 0;
                 }
                 else {
