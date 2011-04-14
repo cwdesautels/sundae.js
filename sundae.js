@@ -66,9 +66,11 @@ var sundae = {};
             _pool.worker.push(temp);
         }
         var worker, data;
+        alert(_delay+1);
         _pool.id = _w.setInterval(
+            
             function (){
-            alert(_delay+1);
+            
                 if(data = _queue.pop()){
                     worker = _pool.getThread();
                     worker.postmessage(data);
@@ -146,7 +148,8 @@ var sundae = {};
                 _w.setTimeout(
                     function(){
                         //_queue.push(pix);
-                        _kernelBuilder.postMessage(pix);
+                        //_kernelBuilder.postMessage(pix);
+                        _pool.worker[0].postMessage(pix);
                     }, _delay
                 );
             }
