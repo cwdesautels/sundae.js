@@ -38,17 +38,23 @@ var sundae = {};
     var _container;
     var _showBlur = false;
     var _pool = {};
-    var _queue = new Array();
-    _queue.add = function(data){
-        var worker = _pool.getThread();
-        if(worker)
-            worker.postMessage(data);
-        else
-            this.push(data);
+    var _queue = {};
+    _queue.setup = function (){
+        _queue.list = [];
+        _queue.add = function(data){
+            var worker = _pool.getThread();
+            if(worker)
+                worker.postMessage(data);
+            else
+                _queue.list.push(data);
+        };
+        _queue.pop = function(){
+            return _queue.list.pop();
+        };
     };
     _pool.getThread = function (){
         var n = _pool.worker.length;
-        while(n--){
+        while (n--){
             if(_pool.worker[n].status){
                 _pool.worker[n].status = false;
                 return _pool.worker[n].worker;
@@ -56,23 +62,25 @@ var sundae = {};
         }
     };
     _pool.setup = function (n){
+        _queue.setup();
         _pool.worker = [];
         var temp;
-        var onmessage = function (event){
-            var pix = event.data;
-            if(_showBlur){
-                putPixels(pix.aId, pix.a);
-                putPixels(pix.bId, pix.b);
-            }
-            putPixels(pix.cId, pix.c);
-            //Continue the process
-            var data = _queue.pop();
-            if(data)
-                this.postMessage(data);
-        };
         while (n--){
             temp = new Worker("resources/slave.js");
-            temp.onmessage = onmessage;
+            temp.onmessage = function (event){
+                var pix = event.data;
+                if(_showBlur){
+                    putPixels(pix.aId, pix.a);
+                    putPixels(pix.bId, pix.b);
+                }
+                putPixels(pix.cId, pix.c);
+                //Continue the process
+                var data = _queue.pop();
+                if(data)
+                    this.postMessage(data);
+                else if(_pool.worker[n])
+                    _pool.worker[n].status = true;
+            };
             _pool.worker.push({"worker":temp, "status":true});
         }
     };
@@ -113,8 +121,8 @@ var sundae = {};
         var a = createCanvas(d, name + "-first", 100, 100);
         var b = createCanvas(d, name + "-second", 100, 100);
         var c = createCanvas(d, name + "-diff", 100, 100);
-        test.firstCanvas.time = 5;
-        test.secondCanvas.time = 5;
+        test.firstCanvas.time = 3;
+        test.secondCanvas.time = 3;
         function runTest(who, func){
             var startTime = (new Date).getTime();
             func();
