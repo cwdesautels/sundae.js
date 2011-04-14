@@ -2,43 +2,41 @@
  * Sundae Javascript Library v0.4
  * http://sundae.lighthouseapp.com/dashboard
  *
- * The MIT License
  * Copyright (c) 2011 Carlin Desautels
- * http://www.opensource.org/licenses/mit-license.php
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * if Pix == null error
+ * about:config
+ * security.fileuri.strict_origin_policy == false
 */
 var sundae = {};
 (function (_w, undef) {
     //Enviroment variables
-    var _kernel, _kernelSize, _kernelSum;
     var _tag = "all";
     var _sigma = 2;
     var _epsilon = 0.05;
     var _delay = 10;
-    var _numWorkers = 3;
+    var _numWorkers = 4;
     var _loadedDeps = [];
     var _container;
     var _showBlur = false;
-    var _compareWorker = new Worker("resources/compare.js");
-    _compareWorker.onmessage = function (event) {
-        if(_showBlur){
-            putPixels(event.data.aId, event.data.a);
-            putPixels(event.data.bId, event.data.b);
-        }
-        putPixels(event.data.cId, event.data.c);
-    };
-    var _blurWorkerA = new Worker("resources/blur.js");
-    _blurWorkerA.onmessage = function (event) {
-        _compareWorker.postMessage(event.data);
-    };
-    //var _blurWorkerB = new Worker("resources/blur.js");
-    //_blurWorkerB.onmessage = function (event) {
-    //    _compareWorker.postMessage(event.data);
-    //};
-    var _kernelBuilder = new Worker("resources/kernel.js");
-    _kernelBuilder.onmessage = function (event) {
-        _blurWorkerA.postMessage(event.data);
-        //_blurWorkerB.postMessage(event.data);
-    };
     var _pool = {};
     var _queue = [];
     _pool.getThread = function (){
@@ -66,14 +64,11 @@ var sundae = {};
             _pool.worker.push(temp);
         }
         var worker, data;
-        alert(_delay+1);
         _pool.id = _w.setInterval(
-            
             function (){
-            
                 if(data = _queue.pop()){
                     worker = _pool.getThread();
-                    worker.postmessage(data);
+                    worker.postMessage(data);
                 }
             }, _delay
         );
@@ -107,7 +102,6 @@ var sundae = {};
         getTests();     
     };
     function reportResult(r,t){
-        _pool.stop();
         r.innerHTML = t.name + ": [" + t.firstCanvas.time + "ms] vs " + "[" + t.secondCanvas.time + "ms]";
         if(t.note)
           r.innerHTML += " - " + t.note;
@@ -130,9 +124,6 @@ var sundae = {};
         var whenDone = function(who){
             isDone[who] = true;
             if(isDone["first"] == true && isDone["second"] == true){
-                //if Pix == null error
-                //about:config
-                //security.fileuri.strict_origin_policy == false
                 reportResult(r, test);
                 var pix = {};
                 pix.a = getPixels(a, isWebgl(a));
@@ -147,9 +138,7 @@ var sundae = {};
                 pix.width = c.width;
                 _w.setTimeout(
                     function(){
-                        //_queue.push(pix);
-                        //_kernelBuilder.postMessage(pix);
-                        _pool.worker[0].postMessage(pix);
+                        _queue.push(pix);
                     }, _delay
                 );
             }
