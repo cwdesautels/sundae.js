@@ -41,7 +41,7 @@ var sundae = {};
     var _queue = {};
     _queue.setup = function (){
         var list = [];
-        _queue.add = function(data){
+        _queue.push = function(data){
             var worker = _pool.getThread();
             if(worker)
                 worker.postMessage(data);
@@ -147,7 +147,7 @@ var sundae = {};
                 pix.width = c.width;
                 _w.setTimeout(
                     function(){
-                        _queue.add(pix);
+                        _queue.push(pix);
                     }, _delay
                 );
             }
