@@ -109,12 +109,12 @@ var sundae = {};
         _pool.setup(_numWorkers);
         getTests();     
     };
-    function reportResult(r,t){
-        r.innerHTML = t.name + ": [" + t.firstCanvas.time + "ms] vs " + "[" + t.secondCanvas.time + "ms]";
+    function reportResult(r,t,s){
+        r.innerHTML = t.name + ": [" + t.firstCanvas.time + "ms] vs " + "[" + t.secondCanvas.time + "ms]" + s;
         if(t.note)
           r.innerHTML += " - " + t.note;
     }
-    function setupTest(test){
+    function setupTest(test, sig){
         var name = test.name || "default";
         var d = createDiv(_container, name);
         var r = createDiv(d, name + "-title");
@@ -133,7 +133,7 @@ var sundae = {};
         var whenDone = function(who){
             isDone[who] = true;
             if(isDone["first"] == true && isDone["second"] == true){
-                reportResult(r, test);
+                reportResult(r, test, sig);
                 var pix = {};
                 pix.a = getPixels(a, isWebgl(a));
                 pix.b = getPixels(b, isWebgl(b));
@@ -227,15 +227,31 @@ var sundae = {};
                 getScript(deps, callback);
             }
         };
+        var sbd, tbd;
         var setupTests = function(tests){
             for(var j = 0; j < tests.length; j++){
+                if(tests[j].blurRadius){
+                    tbd = _sigma;
+                    sundae.setBlurRadius(tests[j].blurRadius);
+                }
+                else
+                    sundae.setBlurRadius(tbd);
                 if(_tag == "all" || (_tag != "all" && tests[j].tag && tests[j].tag == _tag))
-                    setupTest(tests[j]);
+                    setupTest(tests[j], _sigma);
             }
         };
         var setupTestSuites = function(data){
+            if(data.blurRadius)
+                sundae.setBlurRadius(data.blurRadius);
+            sbd = tbd = _sigma;
             if(data.testSuite){
                 for(var i = 0; i < data.testSuite.length; i++){
+                    if(data.testSuite[i].blurRadius){
+                        sbd = _sigma;
+                        sundae.setBlurRadius(data.testSuite[i].blurRadius);
+                    }
+                    else
+                        sundae.setBlurRadius(sbd);
                     if(data.testSuite[i].dependancyURL){
                         loadDeps(data.testSuite[i].dependancyURL, 
                             function(tests){
