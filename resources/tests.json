@@ -1,5 +1,5 @@
 {
-    "blurRadius": "1",
+    "blurRadius": "0",
     "testSuite": [{
         "dependancyURL": "resources/test_1.js",
         "test": [{

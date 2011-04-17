@@ -114,7 +114,7 @@ var sundae = {};
         if(t.note)
           r.innerHTML += " - " + t.note;
     }
-    function setupTest(test){
+    function setupTest(test, radius){
         var name = test.name || "default";
         var d = createDiv(_container, name);
         var r = createDiv(d, name + "-title");
@@ -142,7 +142,7 @@ var sundae = {};
                 pix.bId = b.id; 
                 pix.cId = c.id;
                 pix.eps = _epsilon;
-                pix.sig = _sigma;
+                pix.sig = radius ? radius : _sigma;
                 pix.height = c.height;
                 pix.width = c.width;
                 _w.setTimeout(
@@ -227,10 +227,10 @@ var sundae = {};
                 getScript(deps, callback);
             }
         };
-        var setupTests = function(tests){
+        var setupTests = function(tests, radius){
             for(var j = 0; j < tests.length; j++){
                 if(_tag == "all" || (_tag != "all" && tests[j].tag && tests[j].tag == _tag))
-                    setupTest(tests[j]);
+                    setupTest(tests[j], radius);
             }
         };
         var setupTestSuites = function(data){
@@ -240,15 +240,15 @@ var sundae = {};
                 for(var i = 0; i < data.testSuite.length; i++){
                     if(data.testSuite[i].dependancyURL){
                         loadDeps(data.testSuite[i].dependancyURL, 
-                            function(tests){
+                            function(tests, radius){
                                 return function(){
-                                    setupTests(tests);
+                                    setupTests(tests, radius);
                                 };
-                            }(data.testSuite[i].test)
+                            }(data.testSuite[i].test, data.testSuite[i].blurRadius)
                         );
                     }
                     else{
-                        setupTests(data.testSuite[i].test);
+                        setupTests(data.testSuite[i].test, data.testSuite[i].blurRadius);
                     }    
                 }
             }
