@@ -142,7 +142,7 @@ var sundae = {};
                 pix.bId = b.id; 
                 pix.cId = c.id;
                 pix.eps = _epsilon;
-                pix.sig = radius ? radius : _sigma;
+                pix.sig = test.blurRadius ? test.blurRadius : radius ? radius : _sigma;
                 pix.height = c.height;
                 pix.width = c.width;
                 _w.setTimeout(

@@ -1,5 +1,5 @@
 {
-    "blurRadius": "0",
+    "blurRadius": "2",
     "testSuite": [{
         "dependancyURL": "resources/test_1.js",
         "test": [{
@@ -51,7 +51,7 @@
             }
         }]
     },{
-        "blurRadius": "2",
+        "blurRadius": "0",
         "test": [{
             "name": "Known Pass 1",
             "firstCanvas": {

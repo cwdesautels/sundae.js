@@ -25,7 +25,7 @@
 */
 onmessage = function (event) {
     var kernel, kernelSize, kernelSum, pix = event.data, eps = pix.eps*255;
-    if(pix.sig){
+    if(+pix.sig){
         buildKernel();
         pix.a = blur(pix.a, pix.height, pix.width);
         pix.b = blur(pix.b, pix.height, pix.width);
