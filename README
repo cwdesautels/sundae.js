@@ -17,11 +17,17 @@
 
 {
     //Array of suites within the scope of the program
+    "blurRadius": numForGlobalBlurRadius,
+    "tolerance": numForGlobalTolerance,
     "testSuite": [
         { 
+            "blurRadius": numForSuiteRadius,
+            "tolerance": numForSuiteTolerance,
             "dependancyURL": ["array of URL strings"] OR "just a single string",
             "test": [
                 {
+                    "blurRadius": numForTestRadius,
+                    "tolerance": numForTestTolerance,
                     "name": "string",
                     "note": "string",
                     "tag": "string",

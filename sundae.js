@@ -114,7 +114,7 @@ var sundae = {};
         if(t.note)
           r.innerHTML += " - " + t.note;
     }
-    function setupTest(test, radius){
+    function setupTest(test, radius, tolerance){
         var name = test.name || "default";
         var d = createDiv(_container, name);
         var r = createDiv(d, name + "-title");
@@ -141,7 +141,7 @@ var sundae = {};
                 pix.aId = a.id;
                 pix.bId = b.id; 
                 pix.cId = c.id;
-                pix.eps = _epsilon;
+                pix.eps = test.tolerance ? test.tolerance : tolerance ? tolerance : _epsilon;
                 pix.sig = test.blurRadius ? test.blurRadius : radius ? radius : _sigma;
                 pix.height = c.height;
                 pix.width = c.width;
@@ -227,28 +227,30 @@ var sundae = {};
                 getScript(deps, callback);
             }
         };
-        var setupTests = function(tests, radius){
+        var setupTests = function(tests, radius, tolerance){
             for(var j = 0; j < tests.length; j++){
                 if(_tag == "all" || (_tag != "all" && tests[j].tag && tests[j].tag == _tag))
-                    setupTest(tests[j], radius);
+                    setupTest(tests[j], radius, tolerance);
             }
         };
         var setupTestSuites = function(data){
             if(data.testSuite){
                 if(data.blurRadius)
                     sundae.setBlurRadius(data.blurRadius);
+                if(data.tolerance)
+                    sundae.setTolerance(data.tolerance);
                 for(var i = 0; i < data.testSuite.length; i++){
                     if(data.testSuite[i].dependancyURL){
                         loadDeps(data.testSuite[i].dependancyURL, 
-                            function(tests, radius){
+                            function(tests, radius, tol){
                                 return function(){
-                                    setupTests(tests, radius);
+                                    setupTests(tests, radius, tol);
                                 };
-                            }(data.testSuite[i].test, data.testSuite[i].blurRadius)
+                            }(data.testSuite[i].test, data.testSuite[i].blurRadius, data.testSuite[i].tolerance)
                         );
                     }
                     else{
-                        setupTests(data.testSuite[i].test, data.testSuite[i].blurRadius);
+                        setupTests(data.testSuite[i].test, data.testSuite[i].blurRadius, data.testSuite[i].tolerance);
                     }    
                 }
             }
