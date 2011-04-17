@@ -235,6 +235,8 @@ var sundae = {};
         };
         var setupTestSuites = function(data){
             if(data.testSuite){
+                if(data.blurRadius)
+                    sundae.setBlurRadius(data.blurRadius);
                 for(var i = 0; i < data.testSuite.length; i++){
                     if(data.testSuite[i].dependancyURL){
                         loadDeps(data.testSuite[i].dependancyURL, 
