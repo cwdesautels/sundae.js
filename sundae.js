@@ -103,36 +103,55 @@ var sundae = {};
             _delay = Math.abs(+d);
     };
     sundae.init = function(){
+        var s = _w.document.getElementById("setup");
         _container = createDiv(_w.document.body, "sundae");
-        var b = createButton(_container, "showAll", "Hide All", function(){
+        var b = createButton(s ? s : _container, "showAll", "Hide All", function(){
             for(var i = 0, len = _container.childNodes.length; i < len; i++){
                 if(_container.childNodes[i].type != "submit"){
-                    if(_container.childNodes[i].style.display == "none"){
+                    if(b.innerHTML == "Show All"){
                         _container.childNodes[i].style.display = "block"
-                        b.innerHTML = "Hide All";
                     }
                     else{
                         _container.childNodes[i].style.display = "none"
-                        b.innerHTML = "Show All";
                     }
                 }
             }
+            b.innerHTML = b.innerHTML == "Show All" ? "Hide all" : "Show All";
         });
-        var p = createButton(_container, "showPass", "Passes", function(){
+        var f = createButton(s ? s : _container, "showFail", "Show Fails", function(){
             for(var i = 0, len = _container.childNodes.length; i < len; i++){
                 if(_container.childNodes[i].type != "submit"){
-                    if(_container.childNodes[i].style.display == "none"){
-                        _container.childNodes[i].style.display = "block"
-                        b.innerHTML = "Hide All";
+                    for(var j = 0, dlen = _container.childNodes[i].childNodes.length; j < dlen; j++){
+                        if(_container.childNodes[i].childNodes[j].id.search(/diff$/) > -1){
+                            var pix = getPixels(_container.childNodes[i].childNodes[j], false);
+                            if(pix[1] > 0){
+                                _container.childNodes[i].style.display = "none";
+                            }
+                            else
+                                _container.childNodes[i].style.display = "block";
+                        }
                     }
-                    else{
-                        _container.childNodes[i].style.display = "none"
-                        b.innerHTML = "Show All";
-                    }
-                }   
+                }
             }
+            b.innerHTML = "Show All";
         });
-        var f = createButton(_container, "showFail", "Fails", undef); 
+        var p = createButton(s ? s : _container, "showFail", "Show Passes", function(){
+            for(var i = 0, len = _container.childNodes.length; i < len; i++){
+                if(_container.childNodes[i].type != "submit"){
+                    for(var j = 0, dlen = _container.childNodes[i].childNodes.length; j < dlen; j++){
+                        if(_container.childNodes[i].childNodes[j].id.search(/diff$/) > -1){
+                            var pix = getPixels(_container.childNodes[i].childNodes[j], false);
+                            if(pix[1] > 0){
+                                _container.childNodes[i].style.display = "block";
+                            }
+                            else
+                                _container.childNodes[i].style.display = "none";   
+                        }
+                    }
+                }
+            }
+            b.innerHTML = "Show All";
+        });
         //Tester starting point
         _queue.setup();
         _pool.setup(_numWorkers);
