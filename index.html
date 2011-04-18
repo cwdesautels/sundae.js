@@ -30,14 +30,21 @@
             b.setAttribute("value", "Begin Tests");
             b.setAttribute("onClick", "beginTester();");
             d.getElementById("setup").appendChild(b);
-            getJSON("resources/tests.json", function (data){
-                var t = d.getElementById("type");;
-                for(var i = 0; data.testSuite && i < data.testSuite.length; i++){
-                    for(var j = 0; data.testSuite[i].test && j < data.testSuite[i].test.length; j++){
-                        if(data.testSuite[i].test[j].tag){
-                            var opt = d.createElement("option");
-                            opt.text = opt.value = data.testSuite[i].test[j].tag;
-                            t.options.add(opt);
+            getJSON("resources/tests.json", function (data) {
+                var found = false;
+                var t = d.getElementById("type"); ;
+                for (var i = 0; data.testSuite && i < data.testSuite.length; i++) {
+                    for (var j = 0; data.testSuite[i].test && j < data.testSuite[i].test.length; j++) {
+                        if (data.testSuite[i].test[j].tag) {
+                            for (var n = 0; n < t.length; n++) {
+                                if (t[n].value == data.testSuite[i].test[j].tag)
+                                    found = true;
+                            }
+                            if (!found) {
+                                var opt = d.createElement("option");
+                                opt.text = opt.value = data.testSuite[i].test[j].tag;
+                                t.options.add(opt);
+                            }
                         }
                     }
                 }
