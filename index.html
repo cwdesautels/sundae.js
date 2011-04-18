@@ -48,7 +48,8 @@
                 sundae.setTolerance(d.getElementById("epsilon").value);
                 sundae.setTestTag(d.getElementById("type").value);
                 //Start tester
-                sundae.init();  
+                sundae.init();
+                b.disabled = true;  
             }
             //Duplicate of private function within library
             function getJSON(src, callback){
