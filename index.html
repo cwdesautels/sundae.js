@@ -16,9 +16,6 @@
           </select>
         </td>
       </tr><tr>
-        <td>Time Delay:</td>
-        <td><input type="text" size="4" id="delay" value="10"/>ms</td>
-      </tr><tr>
         <td>Tolerance:</td>
         <td><input type="text" size="2" id="epsilon" value="5"/>%</td>
       </tr><tr>
@@ -50,7 +47,6 @@
                 sundae.setBlurRadius(d.getElementById("sigma").value);
                 sundae.setTolerance(d.getElementById("epsilon").value);
                 sundae.setTestTag(d.getElementById("type").value);
-                sundae.setDelay(d.getElementById("delay").value);
                 //Start tester
                 sundae.init();  
             }

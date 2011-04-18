@@ -32,7 +32,6 @@ var sundae = {};
     var _tag = "all";
     var _sigma = 2;
     var _epsilon = 0.05;
-    var _delay = 10;
     var _numWorkers = 4;
     var _loadedDeps = [];
     var _container;
@@ -89,10 +88,6 @@ var sundae = {};
     sundae.setTestTag = function(t){
         if(t)
             _tag = '' + t;
-    };
-    sundae.setDelay = function(d){
-        if(d)
-            _delay = Math.abs(+d);
     };
     sundae.init = function(){
         var s = _w.document.getElementById("setup");
