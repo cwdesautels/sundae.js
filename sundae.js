@@ -103,8 +103,37 @@ var sundae = {};
             _delay = Math.abs(+d);
     };
     sundae.init = function(){
-        //Tester starting point
         _container = createDiv(_w.document.body, "sundae");
+        var b = createButton(_container, "showAll", "Hide All", function(){
+            for(var i = 0, len = _container.childNodes.length; i < len; i++){
+                if(_container.childNodes[i].type != "submit"){
+                    if(_container.childNodes[i].style.display == "none"){
+                        _container.childNodes[i].style.display = "block"
+                        b.innerHTML = "Hide All";
+                    }
+                    else{
+                        _container.childNodes[i].style.display = "none"
+                        b.innerHTML = "Show All";
+                    }
+                }
+            }
+        });
+        var p = createButton(_container, "showPass", "Passes", function(){
+            for(var i = 0, len = _container.childNodes.length; i < len; i++){
+                if(_container.childNodes[i].type != "submit"){
+                    if(_container.childNodes[i].style.display == "none"){
+                        _container.childNodes[i].style.display = "block"
+                        b.innerHTML = "Hide All";
+                    }
+                    else{
+                        _container.childNodes[i].style.display = "none"
+                        b.innerHTML = "Show All";
+                    }
+                }   
+            }
+        });
+        var f = createButton(_container, "showFail", "Fails", undef); 
+        //Tester starting point
         _queue.setup();
         _pool.setup(_numWorkers);
         getTests();     
@@ -142,7 +171,7 @@ var sundae = {};
                 pix.bId = b.id; 
                 pix.cId = c.id;
                 pix.eps = (Math.abs(test.tolerance ? test.tolerance : tolerance ? tolerance : _epsilon) % 101) / 100;
-                pix.sig = test.blurRadius ? test.blurRadius : radius ? radius : _sigma;
+                pix.sig = Math.abs(test.blurRadius ? test.blurRadius : radius ? radius : _sigma);
                 pix.height = c.height;
                 pix.width = c.width;
                 _w.setTimeout(
@@ -272,6 +301,14 @@ var sundae = {};
             }
             cCtx.putImageData(img, 0, 0);
         }
+    }
+    function createButton(parent, id, text, callback){
+        var b = _w.document.createElement("button");
+        b.id = id;
+        b.onclick=callback;
+        b.innerHTML = text;
+        parent.appendChild(b);
+        return b;
     }
     function createDiv(parent, id){
         var d = _w.document.createElement("div");
