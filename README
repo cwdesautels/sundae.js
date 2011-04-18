@@ -11,6 +11,11 @@
 
 =========================
 
+  USAGE:
+    Your source will get loaded, supported formats below,
+    your function will receive a canvas and a callback. Fill
+    the canvas and use the callback when you are done! Easy.
+    
   API: resouces/tests.json
 
 =================================
@@ -36,14 +41,14 @@
                             "url" : "fileUrl", 
                             "type" : "supported types-> json, script, image" 
                         },
-                        "run" : "global function name OR function(aCanvas){ definition }" 
+                        "run" : "global function name OR function(aCanvas, callback){ definition; callback(); }" 
                     },
                     "secondCanvas" : {
                         "src" : { 
                             "url" : "fileUrl", 
                             "type" : "supported types-> json, script, image" 
                         },
-                        "run" : "global function name OR function(aCanvas){ definition }" 					
+                        "run" : "global function name OR function(aCanvas, callback){ definition; callback(); }" 					
                     }
                 },{//More test objects},{...}
             ]

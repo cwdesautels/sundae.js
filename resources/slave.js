@@ -31,7 +31,7 @@ onmessage = function (event) {
         pix.b = blur(pix.b, pix.height, pix.width);
     }
     comparePixels(pix);
-    postMessage(pix);
+    postMessage({"id" : pix.cId, "pix" : pix.c});
     function buildKernel() {
         var ss = pix.sig * pix.sig;
         var factor = 2 * Math.PI * ss;

@@ -36,7 +36,6 @@ var sundae = {};
     var _numWorkers = 4;
     var _loadedDeps = [];
     var _container;
-    var _showBlur = false;
     var _pool = {};
     var _queue = {};
     _queue.setup = function (){
@@ -68,11 +67,7 @@ var sundae = {};
             temp = new Worker("resources/slave.js");
             temp.onmessage = function (event){
                 var pix = event.data;
-                if(_showBlur){
-                    putPixels(pix.aId, pix.a);
-                    putPixels(pix.bId, pix.b);
-                }
-                putPixels(pix.cId, pix.c);
+                putPixels2D(pix.id, pix.pix);
                 //Continue the process
                 var data = _queue.pop();
                 if(data)
@@ -90,9 +85,6 @@ var sundae = {};
     sundae.setTolerance = function(e){
         if(e)
             _epsilon = (Math.abs(+e) % 101) / 100;
-    };
-    sundae.setShowBlur = function (b){
-        _showBlur = !!b;
     };
     sundae.setTestTag = function(t){
         if(t)
@@ -175,7 +167,6 @@ var sundae = {};
             var startTime = (new Date).getTime();
             func();
             test[who + "Canvas"].time = (new Date).getTime() - startTime;
-            whenDone(who);
         }
         var isDone = {"first" : false, "second" : false};
         var whenDone = function(who){
@@ -193,11 +184,7 @@ var sundae = {};
                 pix.sig = Math.abs(test.blurRadius ? test.blurRadius : radius ? radius : _sigma);
                 pix.height = c.height;
                 pix.width = c.width;
-                _w.setTimeout(
-                    function(){
-                        _queue.push(pix);
-                    }, _delay
-                );
+                _queue.push(pix);
             }
         };
         function sourceLoader(obj, aCanvas, who){
@@ -213,7 +200,9 @@ var sundae = {};
                     function(){
                         runTest(who,
                             function(){
-                                _w[obj.run](aCanvas);
+                                _w[obj.run](aCanvas, function(){
+                                    whenDone(who);
+                                });
                             }
                         );
                     }
@@ -232,14 +221,18 @@ var sundae = {};
             if(typeof(testObj) === "function"){
                 runTest(who, 
                     function(){
-                        testObj(aCanvas);
+                        testObj(aCanvas, function(){
+                            whenDone(who);
+                        });
                     }
                 );
             }
             else if(typeof(testObj) === "string"){
                 runTest(who, 
                     function(){
-                        _w[testObj](aCanvas);
+                        _w[testObj](aCanvas, function(){
+                            whenDone(who);
+                        });
                     }
                 );
             }
@@ -306,20 +299,14 @@ var sundae = {};
         getJSON("resources/tests.json", setupTestSuites); 
     }
     //Global Utility Functions
-    function putPixels(id, pixels){
+    function putPixels2D(id, pixels){
         var c = _w.document.getElementById(id);
-        if(isWebgl(c)){
-            //var gl = c.getContext('experimental-webgl');
-            //gl.texImage2D(gl.TEXTURE_2D, 0, 0, 0, c.width, c.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels); 
+        var cCtx = c.getContext('2d');  
+        var img = cCtx.getImageData(0, 0, c.width, c.height);
+        for(var i = 0, len = pixels.length; i < len; i++){
+            img.data[i] = pixels[i];
         }
-        else {
-            var cCtx = c.getContext('2d');  
-            var img = cCtx.getImageData(0, 0, c.width, c.height);
-            for(var i = 0, len = pixels.length; i < len; i++){
-                img.data[i] = pixels[i];
-            }
-            cCtx.putImageData(img, 0, 0);
-        }
+        cCtx.putImageData(img, 0, 0);
     }
     function createButton(parent, id, text, callback){
         var b = _w.document.createElement("button");

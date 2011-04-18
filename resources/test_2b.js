@@ -1,3 +1,3 @@
-function testTwo(canvas){
-	testTwoReal(canvas);
+function testTwo(canvas, callback){
+	testTwoReal(canvas, callback);
 }

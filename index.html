@@ -24,9 +24,6 @@
       </tr><tr>
         <td>Blur Radius:</td>
         <td><input type="text" size="2" id="sigma" value="2"/>px</td>
-      </tr><tr>
-        <td>Show Blur:</td>
-        <td><input type="checkbox" id="showBlur"/></td>
       </tr></table>
     </div>
     <script type="text/javascript">
@@ -54,7 +51,6 @@
                 sundae.setTolerance(d.getElementById("epsilon").value);
                 sundae.setTestTag(d.getElementById("type").value);
                 sundae.setDelay(d.getElementById("delay").value);
-                sundae.setShowBlur(d.getElementById("showBlur").checked);
                 //Start tester
                 sundae.init();  
             }
