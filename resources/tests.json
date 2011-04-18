@@ -69,6 +69,7 @@
         },{
             "name": "Known Fail 1",
             "blurRadius": "3",
+            "tolerance": "100",
             "firstCanvas": {
                 "src" : { "url" : "resources/default3.png", "type" : "image"}
             },
