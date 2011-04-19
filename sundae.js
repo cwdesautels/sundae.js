@@ -376,7 +376,7 @@ var sundae = {};
             s.type = 'text/javascript';
             s.onload = function(){
                 callback();
-                _w.document.head.removeChild(s);
+                //_w.document.head.removeChild(s);
             };
             s.src = src;
             _w.document.head.appendChild(s);
