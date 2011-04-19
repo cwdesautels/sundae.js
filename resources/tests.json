@@ -1,12 +1,13 @@
 {
     "testSuite": [{
-        "dependancyURL": "resources/test_1.js",
+        "dependancyURL": "resources/Calibration_Tests/test_1.js",
         "blurRadius": "0",
         "test": [{
             "name": "Load test 1",
             "note": "blur == 0",
+            "tag": "loader",
             "firstCanvas" : {
-                "src" : { "url" : "resources/default.png", "type" : "image" }
+                "src" : { "url" : "resources/Calibration_Tests/default.png", "type" : "image" }
             },
             "secondCanvas" : {
                 "run" : "testOne" 					
@@ -14,29 +15,32 @@
         },{
             "name": "Load test 2",
             "note": "blur == 0",
+            "tag": "loader",
             "firstCanvas" : {
-                "src" : { "url" : "resources/default.png", "type" : "image" }
+                "src" : { "url" : "resources/Calibration_Tests/default.png", "type" : "image" }
             },
             "secondCanvas" : {
                 "run" : "function (canvas, callback) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); callback();}" 					
             }
         }]
     },{
-        "dependancyURL": ["resources/test_2a.js", "resources/test_2b.js"],
+        "dependancyURL": ["resources/Calibration_Tests/test_2a.js", "resources/Calibration_Tests/test_2b.js"],
         "test": [{
             "name": "Load test 3",
             "note": "blur == 0",
+            "tag": "loader",
             "blurRadius": "0",
             "firstCanvas" : {
                 "run" : "testTwo" 
             },
             "secondCanvas" : {
-                "src" : { "url" : "resources/default.png", "type" : "image" }
+                "src" : { "url" : "resources/Calibration_Tests/default.png", "type" : "image" }
             }
         },{
             "name": "Load test 4",
+            "tag": "loader",
             "firstCanvas" : {
-                "src" : { "url" : "resources/test_4.js", "type" : "json" },
+                "src" : { "url" : "resources/Calibration_Tests/test_4.js", "type" : "json" },
                 "run" : "testFour" 
             },
             "secondCanvas" : {
@@ -44,8 +48,9 @@
             }
         },{
             "name": "Load test 5",
+            "tag": "loader",
             "firstCanvas" : {
-                "src" : { "url" : "resources/test_5.js", "type" : "script" },
+                "src" : { "url" : "resources/Calibration_Tests/test_5.js", "type" : "script" },
                 "run" : "testFive" 
             },
             "secondCanvas" : {
@@ -57,10 +62,10 @@
             "name": "Known Pass 1",
             "tag": "calibration",
             "firstCanvas": {
-                "src" : { "url" : "resources/default2.png", "type" : "image"}
+                "src" : { "url" : "resources/Calibration_Tests/default2.png", "type" : "image"}
             },
             "secondCanvas": {
-                "src" : { "url" : "resources/default2.png", "type" : "image"}
+                "src" : { "url" : "resources/Calibration_Tests/default2.png", "type" : "image"}
             }
         },{
             "name": "Known Pass 2",
@@ -75,28 +80,28 @@
             "name": "Known Fail 1",
             "tag": "calibration",
             "firstCanvas": {
-                "src" : { "url" : "resources/default3.png", "type" : "image"}
+                "src" : { "url" : "resources/Calibration_Tests/default3.png", "type" : "image"}
             },
             "secondCanvas": {
-                "src" : { "url" : "resources/default4.png", "type" : "image"}
+                "src" : { "url" : "resources/Calibration_Tests/default4.png", "type" : "image"}
             }
         },{
             "name": "Known Fail 2",
             "tag": "calibration",
             "firstCanvas": {
-                "src" : { "url" : "resources/default2.png", "type" : "image"}
+                "src" : { "url" : "resources/Calibration_Tests/default2.png", "type" : "image"}
             },
             "secondCanvas": {
-                "src" : { "url" : "resources/default4.png", "type" : "image"}
+                "src" : { "url" : "resources/Calibration_Tests/default4.png", "type" : "image"}
             }
         },{
             "name": "Known Fail 3",
             "tag": "calibration",
             "firstCanvas": {
-                "src" : { "url" : "resources/default2.png", "type" : "image"}
+                "src" : { "url" : "resources/Calibration_Tests/default2.png", "type" : "image"}
             },
             "secondCanvas": {
-                "src" : { "url" : "resources/default.png", "type" : "image"}
+                "src" : { "url" : "resources/Calibration_Tests/default.png", "type" : "image"}
             }
         },{
             "name": "Known Fail 4",
@@ -111,7 +116,7 @@
             "name": "Known Fail 5",
             "tag": "calibration",
             "firstCanvas": {
-                "src" : { "url" : "resources/default.png", "type" : "image"}
+                "src" : { "url" : "resources/Calibration_Tests/default.png", "type" : "image"}
             },
             "secondCanvas": {
                 "run": "function (canvas, callback) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 1.0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); callback();}"
@@ -123,7 +128,7 @@
                 "run": "function (canvas, callback) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); callback();}"
             },
             "secondCanvas": {
-                "src" : { "url" : "resources/default2.png", "type" : "image"}
+                "src" : { "url" : "resources/Calibration_Tests/default2.png", "type" : "image"}
             }
         }]
     }]
