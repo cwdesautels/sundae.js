@@ -1,0 +1,29 @@
+
+/* prevent the window scrollbars from appearing
+which conflict with zooming.*/
+html {
+ /* overflow-x: hidden; */
+ /* overflow-y: hidden; */
+}
+
+span, div{
+  font-family: monospace;
+  color: #FFFFFF;
+}
+
+.orangeText{
+  color: orange;
+}
+
+.blackText{
+  color: #000000;
+}
+
+/*
+  Make sure the screenshots taken in the
+  acorn demo appear at the top of the page.
+*/
+img{
+  vertical-align: top;
+  border: 1px solid #000;
+}
