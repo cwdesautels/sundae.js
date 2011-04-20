@@ -1,5 +1,17 @@
 {
     "testSuite": [{
+        "dependancyURL": "resources/Calibration_Tests/webglDemo.js",
+        "test": [{
+            "name": "WebGL",
+            "tag": "webgl",
+            "firstCanvas": {
+                "run" : "rightSideUp"
+            },
+            "secondCanvas": {
+                "run" : "rightSideUp"
+            }
+        }]
+    },{
         "dependancyURL": "resources/Calibration_Tests/test_1.js",
         "blurRadius": "0",
         "test": [{
@@ -10,7 +22,7 @@
                 "src" : { "url" : "resources/Calibration_Tests/default.png", "type" : "image" }
             },
             "secondCanvas" : {
-                "run" : "testOne" 					
+                "run" : "testOne"
             }
         },{
             "name": "Load test 2",
@@ -20,7 +32,7 @@
                 "src" : { "url" : "resources/Calibration_Tests/default.png", "type" : "image" }
             },
             "secondCanvas" : {
-                "run" : "function (canvas, callback) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); callback();}" 					
+                "run" : "function (canvas, callback) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); callback();}"
             }
         }]
     },{
@@ -31,7 +43,7 @@
             "tag": "loader",
             "blurRadius": "0",
             "firstCanvas" : {
-                "run" : "testTwo" 
+                "run" : "testTwo"
             },
             "secondCanvas" : {
                 "src" : { "url" : "resources/Calibration_Tests/default.png", "type" : "image" }
@@ -41,20 +53,20 @@
             "tag": "loader",
             "firstCanvas" : {
                 "src" : { "url" : "resources/Calibration_Tests/test_4.js", "type" : "json" },
-                "run" : "testFour" 
+                "run" : "testFour"
             },
             "secondCanvas" : {
-                "run" : "function (canvas, callback) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); callback();}"					
+                "run" : "function (canvas, callback) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); callback();}"
             }
         },{
             "name": "Load test 5",
             "tag": "loader",
             "firstCanvas" : {
                 "src" : { "url" : "resources/Calibration_Tests/test_5.js", "type" : "script" },
-                "run" : "testFive" 
+                "run" : "testFive"
             },
             "secondCanvas" : {
-                "run" : "function (canvas, callback) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); callback();}"					
+                "run" : "function (canvas, callback) { var gl = canvas.getContext('experimental-webgl'); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); callback();}"
             }
         }]
     },{

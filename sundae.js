@@ -10,7 +10,7 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
@@ -99,7 +99,7 @@ var sundae = {};
         _queue.setup();
         _pool.setup(_numWorkers);
         //Tester starting point
-        getTests();     
+        getTests();
     };
     function reportResult(r,t){
         r.innerHTML = t.name + ": [" + t.firstCanvas.time + "ms] vs " + "[" + t.secondCanvas.time + "ms]";
@@ -130,7 +130,7 @@ var sundae = {};
                 pix.b = getPixels(b, isWebgl(b));
                 pix.c = getPixels(c, false);
                 pix.aId = a.id;
-                pix.bId = b.id; 
+                pix.bId = b.id;
                 pix.cId = c.id;
                 pix.eps = test.tolerance ? Math.abs((+test.tolerance)%101)/100 : tolerance ? Math.abs((+tolerance) % 101) / 100 : _epsilon;
                 pix.sig = Math.abs(test.blurRadius ? +test.blurRadius : radius ? +radius : _sigma);
@@ -141,7 +141,7 @@ var sundae = {};
         };
         function sourceLoader(obj, aCanvas, who){
             if(obj.src.type === "image"){
-                getImage(aCanvas, obj.src.url, function(){ whenDone(who); });    
+                getImage(aCanvas, obj.src.url, function(){ whenDone(who); });
             }
             else if(obj.src.type === "script"){
                 getScript(obj.src.url, function(){
@@ -212,11 +212,11 @@ var sundae = {};
                         }(data.testSuite[i].test, data.testSuite[i].blurRadius, data.testSuite[i].tolerance));
                     }
                     else
-                        setupTests(data.testSuite[i].test, data.testSuite[i].blurRadius, data.testSuite[i].tolerance);  
+                        setupTests(data.testSuite[i].test, data.testSuite[i].blurRadius, data.testSuite[i].tolerance);
                 }
             }
         };
-        getJSON("resources/tests.json", setupTestSuites); 
+        getJSON("resources/tests.json", setupTestSuites);
     }
     //Global Utility Functions
     function showPasses(container, passes){
@@ -228,7 +228,7 @@ var sundae = {};
                         if(pix[1] > 0)
                             _container.childNodes[i].style.display = passes ? "block" : "none";
                         else
-                            _container.childNodes[i].style.display = passes ? "none" : "block";    
+                            _container.childNodes[i].style.display = passes ? "none" : "block";
                     }
                 }
             }
@@ -247,7 +247,7 @@ var sundae = {};
     }
     function putPixels2D(id, pixels){
         var c = _w.document.getElementById(id);
-        var cCtx = c.getContext('2d');  
+        var cCtx = c.getContext('2d');
         var img = cCtx.getImageData(0, 0, c.width, c.height);
         for(var i = 0, len = pixels.length; i < len; i++){
             img.data[i] = pixels[i];

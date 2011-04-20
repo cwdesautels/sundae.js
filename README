@@ -4,7 +4,7 @@
   http://sundae.lighthouseapp.com/dashboard
   http://zenit.senecac.on.ca/wiki/index.php/User:Cwdesautels/sundae
   http://cwd89.blogspot.com/
- 
+
   The MIT License
   Copyright (c) 2011 Carlin Desautels
   http://www.opensource.org/licenses/mit-license.php
@@ -15,7 +15,7 @@
     Your source will get loaded, supported formats below,
     your function will receive a canvas and a callback. Fill
     the canvas and use the callback when you are done! Easy.
-    
+
   API: resouces/tests.json
 
 =================================
@@ -25,7 +25,7 @@
     "blurRadius": numForGlobalBlurRadius,
     "tolerance": numForGlobalTolerance,
     "testSuite": [
-        { 
+        {
             "blurRadius": numForSuiteRadius,
             "tolerance": numForSuiteTolerance,
             "dependancyURL": ["array of URL strings"] OR "just a single string",
@@ -37,18 +37,18 @@
                     "note": "string",
                     "tag": "string",
                     "firstCanvas" : {
-                        "src" : { 
-                            "url" : "fileUrl", 
-                            "type" : "supported types-> json, script, image" 
+                        "src" : {
+                            "url" : "fileUrl",
+                            "type" : "supported types-> json, script, image"
                         },
-                        "run" : "global function name OR function(aCanvas, callback){ definition; callback(); }" 
+                        "run" : "global function name OR function(aCanvas, callback){ definition; callback(); }"
                     },
                     "secondCanvas" : {
-                        "src" : { 
-                            "url" : "fileUrl", 
-                            "type" : "supported types-> json, script, image" 
+                        "src" : {
+                            "url" : "fileUrl",
+                            "type" : "supported types-> json, script, image"
                         },
-                        "run" : "global function name OR function(aCanvas, callback){ definition; callback(); }" 					
+                        "run" : "global function name OR function(aCanvas, callback){ definition; callback(); }"
                     }
                 },{//More test objects},{...}
             ]
