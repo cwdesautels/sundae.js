@@ -1,5 +1,5 @@
 /*!
- * Sundae Javascript Library v0.4
+ * Sundae Javascript Library v0.9
  * http://sundae.lighthouseapp.com/dashboard
  *
  * Copyright (c) 2011 Carlin Desautels
@@ -90,58 +90,15 @@ var sundae = {};
             _tag = '' + t;
     };
     sundae.init = function(){
+        //Tester setup
         var s = _w.document.getElementById("setup");
         _container = createDiv(_w.document.body, "sundae");
-        var b = createButton(s ? s : _container, "showAll", "Hide All", function(){
-            for(var i = 0, len = _container.childNodes.length; i < len; i++){
-                if(_container.childNodes[i].type != "submit"){
-                    if(b.innerHTML == "Show All"){
-                        _container.childNodes[i].style.display = "block"
-                    }
-                    else{
-                        _container.childNodes[i].style.display = "none"
-                    }
-                }
-            }
-            b.innerHTML = b.innerHTML == "Show All" ? "Hide all" : "Show All";
-        });
-        var f = createButton(s ? s : _container, "showFail", "Show Fails", function(){
-            for(var i = 0, len = _container.childNodes.length; i < len; i++){
-                if(_container.childNodes[i].type != "submit"){
-                    for(var j = 0, dlen = _container.childNodes[i].childNodes.length; j < dlen; j++){
-                        if(_container.childNodes[i].childNodes[j].id.search(/diff$/) > -1){
-                            var pix = getPixels(_container.childNodes[i].childNodes[j], false);
-                            if(pix[1] > 0){
-                                _container.childNodes[i].style.display = "none";
-                            }
-                            else
-                                _container.childNodes[i].style.display = "block";
-                        }
-                    }
-                }
-            }
-            b.innerHTML = "Show All";
-        });
-        var p = createButton(s ? s : _container, "showFail", "Show Passes", function(){
-            for(var i = 0, len = _container.childNodes.length; i < len; i++){
-                if(_container.childNodes[i].type != "submit"){
-                    for(var j = 0, dlen = _container.childNodes[i].childNodes.length; j < dlen; j++){
-                        if(_container.childNodes[i].childNodes[j].id.search(/diff$/) > -1){
-                            var pix = getPixels(_container.childNodes[i].childNodes[j], false);
-                            if(pix[1] > 0){
-                                _container.childNodes[i].style.display = "block";
-                            }
-                            else
-                                _container.childNodes[i].style.display = "none";   
-                        }
-                    }
-                }
-            }
-            b.innerHTML = "Show All";
-        });
-        //Tester starting point
+        var b = createButton(s ? s : _container, "Hide All", function(){b.innerHTML=flipAllDivs(_container,b.innerHTML=="Show All"?"Hide All":"Show All");});
+        var f = createButton(s ? s : _container, "Show Fails", function(){showPasses(_container,false); b.innerHTML="Show All";});
+        var p = createButton(s ? s : _container, "Show Passes", function(){showPasses(_container,true); b.innerHTML="Show All";});
         _queue.setup();
         _pool.setup(_numWorkers);
+        //Tester starting point
         getTests();     
     };
     function reportResult(r,t){
@@ -184,66 +141,40 @@ var sundae = {};
         };
         function sourceLoader(obj, aCanvas, who){
             if(obj.src.type === "image"){
-                getImage(aCanvas, obj.src.url, 
-                    function(){
-                        whenDone(who);
-                    }
-                );    
+                getImage(aCanvas, obj.src.url, function(){ whenDone(who); });    
             }
             else if(obj.src.type === "script"){
-                getScript(obj.src.url, 
-                    function(){
-                        runTest(who,
-                            function(){
-                                _w[obj.run](aCanvas, function(){
-                                    whenDone(who);
-                                });
-                            }
-                        );
-                    }
-                );
+                getScript(obj.src.url, function(){
+                    runTest(who, function(){ _w[obj.run](aCanvas, function(){ whenDone(who); }); });
+                });
             }
             else if(obj.src.type === "json"){
-                getJSON(obj.src.url,
-                    function(data){
-                        sourceRunner(data[obj.run], aCanvas, who);
-                    }
-                );
+                getJSON(obj.src.url, function(data){
+                    sourceRunner(data[obj.run], aCanvas, who);
+                });
             }
         }
         function sourceRunner(obj, aCanvas, who){
             var testObj = eval(obj);
             if(typeof(testObj) === "function"){
-                runTest(who, 
-                    function(){
-                        testObj(aCanvas, function(){
-                            whenDone(who);
-                        });
-                    }
-                );
+                runTest(who, function(){
+                    testObj(aCanvas, function(){ whenDone(who); });
+                });
             }
             else if(typeof(testObj) === "string"){
-                runTest(who, 
-                    function(){
-                        _w[testObj](aCanvas, function(){
-                            whenDone(who);
-                        });
-                    }
-                );
+                runTest(who, function(){
+                    _w[testObj](aCanvas, function(){ whenDone(who); });
+                });
             }
         }
-        if(test.firstCanvas.src){
+        if(test.firstCanvas.src)
             sourceLoader(test.firstCanvas, a, "first");
-        }
-        else if(test.firstCanvas.run){
+        else if(test.firstCanvas.run)
             sourceRunner(test.firstCanvas.run, a, "first");
-        }
-        if(test.secondCanvas.src){
+        if(test.secondCanvas.src)
             sourceLoader(test.secondCanvas, b, "second");
-        }
-        else if(test.secondCanvas.run){
+        else if(test.secondCanvas.run)
             sourceRunner(test.secondCanvas.run, b, "second");
-        }
     }
     function getTests(){
         var loadDeps = function(deps, callback){
@@ -259,9 +190,8 @@ var sundae = {};
                     getScript(deps[i], allDepsLoaded);
                 }
             }
-            else if(typeof(deps) === 'string'){
+            else if(typeof(deps) === 'string')
                 getScript(deps, callback);
-            }
         };
         var setupTests = function(tests, radius, tolerance){
             for(var j = 0; j < tests.length; j++){
@@ -277,23 +207,44 @@ var sundae = {};
                     sundae.setTolerance(data.tolerance);
                 for(var i = 0; i < data.testSuite.length; i++){
                     if(data.testSuite[i].dependancyURL){
-                        loadDeps(data.testSuite[i].dependancyURL, 
-                            function(tests, radius, tol){
-                                return function(){
-                                    setupTests(tests, radius, tol);
-                                };
-                            }(data.testSuite[i].test, data.testSuite[i].blurRadius, data.testSuite[i].tolerance)
-                        );
+                        loadDeps(data.testSuite[i].dependancyURL, function(tests, radius, tol){
+                            return function(){ setupTests(tests, radius, tol); };
+                        }(data.testSuite[i].test, data.testSuite[i].blurRadius, data.testSuite[i].tolerance));
                     }
-                    else{
-                        setupTests(data.testSuite[i].test, data.testSuite[i].blurRadius, data.testSuite[i].tolerance);
-                    }    
+                    else
+                        setupTests(data.testSuite[i].test, data.testSuite[i].blurRadius, data.testSuite[i].tolerance);  
                 }
             }
         };
         getJSON("resources/tests.json", setupTestSuites); 
     }
     //Global Utility Functions
+    function showPasses(container, passes){
+        for(var i = 0, len = _container.childNodes.length; i < len; i++){
+            if(container.childNodes[i].type != "submit"){
+                for(var j = 0, dlen = container.childNodes[i].childNodes.length; j < dlen; j++){
+                    if(container.childNodes[i].childNodes[j].id.search(/diff$/) > -1){
+                        var pix = getPixels(container.childNodes[i].childNodes[j], false);
+                        if(pix[1] > 0)
+                            _container.childNodes[i].style.display = passes ? "block" : "none";
+                        else
+                            _container.childNodes[i].style.display = passes ? "none" : "block";    
+                    }
+                }
+            }
+        }
+    }
+    function flipAllDivs(container, str){
+        for(var i = 0, len = container.childNodes.length; i < len; i++){
+            if(container.childNodes[i].type != "submit"){
+                if(str === "Hide All")
+                    container.childNodes[i].style.display = "block"
+                else
+                    container.childNodes[i].style.display = "none"
+            }
+        }
+        return str;
+    }
     function putPixels2D(id, pixels){
         var c = _w.document.getElementById(id);
         var cCtx = c.getContext('2d');  
@@ -303,9 +254,8 @@ var sundae = {};
         }
         cCtx.putImageData(img, 0, 0);
     }
-    function createButton(parent, id, text, callback){
+    function createButton(parent, text, callback){
         var b = _w.document.createElement("button");
-        b.id = id;
         b.onclick=callback;
         b.innerHTML = text;
         parent.appendChild(b);
@@ -362,8 +312,7 @@ var sundae = {};
                 try{
                     callback(JSON.parse(r.responseText));
                 }
-                catch(e){
-                    //Not valid JSON
+                catch(e){//Not valid JSON
                     callback(eval("(" + r.responseText + ")"));
                 }
             };
@@ -376,38 +325,33 @@ var sundae = {};
             s.type = 'text/javascript';
             s.onload = function(){
                 callback();
-                //_w.document.head.removeChild(s);
+                _w.document.head.removeChild(s);
             };
             s.src = src;
             _w.document.head.appendChild(s);
         }
     }
-    function getPixels(aCanvas, isWebGL) {        
+    function getPixels(aCanvas, isWebGL) {
         try {
             if (isWebGL) {
-                var context = aCanvas.getContext("experimental-webgl");  
+                var context = aCanvas.getContext("experimental-webgl");
                 var data = null;
                 try{
-                    // try deprecated way first 
                     data = context.readPixels(0, 0, aCanvas.width, aCanvas.height, context.RGBA, context.UNSIGNED_BYTE);
-                    // Chrome posts an error
-                    if(context.getError()){
-                        throw new Error("API has changed");                
-                    }              
+                    if(context.getError())
+                        throw new Error("API has changed");
                 }
                 catch(e){
-                    // if that failed, try new way
-                    if(!data){             
+                    if(!data){
                         data = new Uint8Array(aCanvas.width * aCanvas.height * 4);
                         context.readPixels(0, 0, aCanvas.width, aCanvas.height, context.RGBA, context.UNSIGNED_BYTE, data);
                     }
                 }
                 return data;
-            } 
-            else {
-                return aCanvas.getContext('2d').getImageData(0, 0, aCanvas.width, aCanvas.height).data;
             }
-        } 
+            else
+                return aCanvas.getContext('2d').getImageData(0, 0, aCanvas.width, aCanvas.height).data;
+        }
         catch (e) {
             return null;
         }

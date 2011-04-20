@@ -110,4 +110,3 @@ onmessage = function (event) {
         }
     }
 };
-
