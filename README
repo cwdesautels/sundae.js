@@ -16,7 +16,7 @@
     your function will receive a canvas and a callback. Fill
     the canvas and use the callback when you are done! Easy.
 
-  API: resouces/tests.json
+  API: tests.json
 
 =================================
 
