@@ -1,4 +1,5 @@
 {
+    "setup": { "run": "function(){console.log('global setup run');}" },
     "testSuite": [{
         "dependancyURL": "resources/Calibration_Tests/webglDemo.js",
         "test": [{
@@ -13,6 +14,7 @@
         }]
     },{
         "dependancyURL": "resources/Calibration_Tests/test_1.js",
+        "setup": { "run": "function(){console.log('suite setup run');}" },
         "blurRadius": "0",
         "test": [{
             "name": "Load test 1",
@@ -38,6 +40,7 @@
     },{
         "dependancyURL": ["resources/Calibration_Tests/test_2a.js", "resources/Calibration_Tests/test_2b.js"],
         "test": [{
+            "setup": { "run": "function(){console.log('test setup run');}" },
             "name": "Load test 3",
             "note": "blur == 0",
             "tag": "loader",

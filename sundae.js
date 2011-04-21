@@ -103,7 +103,7 @@ var sundae = {};
         getTests();
     };
     function reportResult(r,t){
-        r.innerHTML = t.name + ": [" + t.firstCanvas.time + "ms] vs " + "[" + t.secondCanvas.time + "ms]";
+        r.innerHTML = t.name + ": [" + t.first + "ms] vs " + "[" + t.second + "ms]";
         if(t.note)
           r.innerHTML += " - " + t.note;
     }
@@ -114,12 +114,13 @@ var sundae = {};
         var a = createCanvas(d, name + "-first", 100, 100);
         var b = createCanvas(d, name + "-second", 100, 100);
         var c = createCanvas(d, name + "-diff", 100, 100);
-        test.firstCanvas.time = 3;
-        test.secondCanvas.time = 3;
-        function runTest(who, func){
+        test.first = 3;
+        test.second = 3;
+        function runTest(id, func){
+            var who = id.substring(id.lastIndexOf('-')+1,id.length);
             var startTime = (new Date).getTime();
             func();
-            test[who + "Canvas"].time = (new Date).getTime() - startTime;
+            test[who] = (new Date).getTime() - startTime;
         }
         var isDone = {"first" : false, "second" : false};
         var whenDone = function(who){
@@ -140,42 +141,42 @@ var sundae = {};
                 _queue.push(pix);
             }
         };
-        function sourceLoader(obj, aCanvas, who){
+        function sourceLoader(obj, aCanvas, callback){
             if(obj.src.type === "image"){
-                getImage(aCanvas, obj.src.url, function(){ whenDone(who); });
+                getImage(aCanvas, obj.src.url, callback);
             }
             else if(obj.src.type === "script"){
                 getScript(obj.src.url, function(){
-                    runTest(who, function(){ _w[obj.run](aCanvas, function(){ whenDone(who); }); });
+                    runTest(aCanvas.id, function(){ _w[obj.run](aCanvas, callback); });
                 });
             }
             else if(obj.src.type === "json"){
                 getJSON(obj.src.url, function(data){
-                    sourceRunner(data[obj.run], aCanvas, who);
+                    sourceRunner(data[obj.run], aCanvas, callback);
                 });
             }
         }
-        function sourceRunner(obj, aCanvas, who){
+        function sourceRunner(obj, aCanvas, callback){
             var testObj = eval(obj);
             if(typeof(testObj) === "function"){
-                runTest(who, function(){
-                    testObj(aCanvas, function(){ whenDone(who); });
+                runTest(aCanvas.id, function(){
+                    testObj(aCanvas, callback);
                 });
             }
             else if(typeof(testObj) === "string"){
-                runTest(who, function(){
-                    _w[testObj](aCanvas, function(){ whenDone(who); });
+                runTest(aCanvas.id, function(){
+                    _w[testObj](aCanvas, callback);
                 });
             }
         }
         if(test.firstCanvas.src)
-            sourceLoader(test.firstCanvas, a, "first");
+            sourceLoader(test.firstCanvas, a, function(){ whenDone("first");});
         else if(test.firstCanvas.run)
-            sourceRunner(test.firstCanvas.run, a, "first");
+            sourceRunner(test.firstCanvas.run, a, function(){ whenDone("first");});
         if(test.secondCanvas.src)
-            sourceLoader(test.secondCanvas, b, "second");
+            sourceLoader(test.secondCanvas, b, function(){ whenDone("second");});
         else if(test.secondCanvas.run)
-            sourceRunner(test.secondCanvas.run, b, "second");
+            sourceRunner(test.secondCanvas.run, b, function(){ whenDone("second");});
     }
     function getTests(){
         var loadDeps = function(deps, callback){
@@ -196,8 +197,11 @@ var sundae = {};
         };
         var setupTests = function(tests, radius, tolerance){
             for(var j = 0; j < tests.length; j++){
-                if(_tag == "all" || (_tag != "all" && tests[j].tag && tests[j].tag == _tag))
+                if(_tag == "all" || (_tag != "all" && tests[j].tag && tests[j].tag == _tag)){
+                    if(tests.setup)
+                        runSetup(tests.setup.src, tests.setup.run);
                     setupTest(tests[j], radius, tolerance);
+                }
             }
         };
         var setupTestSuites = function(data){
@@ -206,6 +210,8 @@ var sundae = {};
                     sundae.setBlurRadius(data.blurRadius);
                 if(data.tolerance)
                     sundae.setTolerance(data.tolerance);
+                if(data.setup)
+                    runSetup(data.setup.src, data.setup.run);
                 for(var i = 0; i < data.testSuite.length; i++){
                     if(data.testSuite[i].dependancyURL){
                         loadDeps(data.testSuite[i].dependancyURL, function(tests, radius, tol){
@@ -220,6 +226,15 @@ var sundae = {};
         getJSON("tests.json", setupTestSuites);
     }
     //Global Utility Functions
+    function runSetup(src, func){
+        if(func){
+            func = eval(func);
+            if(src && typeof(func) === 'string')
+                getScript(src, func);
+            else if(typeof(run) === 'function')
+                func();
+        }
+    }
     function showPasses(container, passes){
         for(var i = 0, len = _container.childNodes.length; i < len; i++){
             if(container.childNodes[i].type != "submit"){
