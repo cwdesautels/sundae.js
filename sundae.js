@@ -63,7 +63,7 @@ var sundae = {};
         };
         var temp;
         while (n--){
-            temp = new Worker("resources/slave.js");
+            temp = new Worker("slave.js");
             temp.onmessage = function (event){
                 var pix = event.data;
                 putPixels2D(pix.id, pix.data);
@@ -216,7 +216,7 @@ var sundae = {};
                 }
             }
         };
-        getJSON("resources/tests.json", setupTestSuites);
+        getJSON("tests.json", setupTestSuites);
     }
     //Global Utility Functions
     function showPasses(container, passes){
