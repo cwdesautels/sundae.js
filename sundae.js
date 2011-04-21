@@ -63,18 +63,19 @@ var sundae = {};
         };
         var temp;
         while (n--){
-            temp = new Worker("slave.js");
+            (function(me){
+            temp = new Worker("slave.js");           
             temp.onmessage = function (event){
                 var pix = event.data;
                 putPixels2D(pix.id, pix.data);
-                //Continue the process
                 var data = _queue.pop();
                 if(data)
                     this.postMessage(data);
-                else if(worker[n])
-                    worker[n].status = true;
+                else
+                    worker[me].status = true;
             };
             worker.push({"worker":temp, "status":true});
+            })(n)
         }
     };
     sundae.setBlurRadius = function(s){
