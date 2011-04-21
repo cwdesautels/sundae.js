@@ -30,7 +30,7 @@
             b.setAttribute("value", "Begin Tests");
             b.setAttribute("onClick", "beginTester();");
             d.getElementById("setup").appendChild(b);
-            getJSON("resources/tests.json", function (data) {
+            getJSON("tests.json", function (data) {
                 var found = false;
                 var t = d.getElementById("type"); ;
                 for (var i = 0; data.testSuite && i < data.testSuite.length; i++) {
