@@ -32,7 +32,7 @@ onmessage = function (event) {
         pix.b = blur(pix.b, pix.height, pix.width);
     }
     comparePixels(pix);
-    postMessage({"id" : pix.cId, "pix" : pix.c});
+    postMessage({"id":pix.cId, "data":pix.c});
     function buildKernel() {
         var ss = pix.sig * pix.sig;
         var factor = 2 * Math.PI * ss;
@@ -61,6 +61,7 @@ onmessage = function (event) {
         }
     }
     function blur(data, height, width) {
+        var newData = new Uint8Array(data.length);
         for (var y = 0; y < height; ++y) {
             for (var x = 0; x < width; ++x) {
                 var r = 0, g = 0, b = 0, a = 0;
@@ -74,13 +75,13 @@ onmessage = function (event) {
                         a += data[4 * ((y + j) * width + (x + i)) + 3] * kernel[Math.abs(j)][Math.abs(i)];
                     }
                 }
-                data[4 * (y * width + x) + 0] = r / kernelSum;
-                data[4 * (y * width + x) + 1] = g / kernelSum;
-                data[4 * (y * width + x) + 2] = b / kernelSum;
-                data[4 * (y * width + x) + 3] = a / kernelSum;
+                newData[4 * (y * width + x) + 0] = Math.round(r / kernelSum);
+                newData[4 * (y * width + x) + 1] = Math.round(g / kernelSum);
+                newData[4 * (y * width + x) + 2] = Math.round(b / kernelSum);
+                newData[4 * (y * width + x) + 3] = Math.round(a / kernelSum);
             }
         }
-        return data;
+        return newData;
     }
     function comparePixels(pix) {
         var failed = false;

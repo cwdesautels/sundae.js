@@ -66,7 +66,7 @@ var sundae = {};
             temp = new Worker("resources/slave.js");
             temp.onmessage = function (event){
                 var pix = event.data;
-                putPixels2D(pix.id, pix.pix);
+                putPixels2D(pix.id, pix.data);
                 //Continue the process
                 var data = _queue.pop();
                 if(data)
@@ -347,7 +347,20 @@ var sundae = {};
                         context.readPixels(0, 0, aCanvas.width, aCanvas.height, context.RGBA, context.UNSIGNED_BYTE, data);
                     }
                 }
-                return data;
+                var col = 0;
+                var row = (4 * aCanvas.width * aCanvas.height) - (4 * aCanvas.width);
+                var n = new Uint8Array(aCanvas.width * aCanvas.height * 4);
+                for (var j = 0, len = data.length; j < len; j += 4, col+=4){
+                    if(col === 4 * aCanvas.width){
+                        col = 0;
+                        row -= 4 * aCanvas.width;
+                    }
+                    n[j] = data[row+col];
+                    n[j+1] = data[row+col+1];
+                    n[j+2] = data[row+col+2];
+                    n[j+3] = data[row+col+3];
+                }
+                return n;
             }
             else
                 return aCanvas.getContext('2d').getImageData(0, 0, aCanvas.width, aCanvas.height).data;
