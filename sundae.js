@@ -64,7 +64,7 @@ var sundae = {};
         var temp;
         while (n--){
             (function(me){
-            temp = new Worker("slave.js");           
+            temp = new Worker("slave.js");
             temp.onmessage = function (event){
                 var pix = event.data;
                 putPixels2D(pix.id, pix.data);
@@ -169,6 +169,8 @@ var sundae = {};
                 });
             }
         }
+        if(test.setup)
+            runSetup(test.setup.src, test.setup.run);
         if(test.firstCanvas.src)
             sourceLoader(test.firstCanvas, a, function(){ whenDone("first");});
         else if(test.firstCanvas.run)
@@ -197,11 +199,8 @@ var sundae = {};
         };
         var setupTests = function(tests, radius, tolerance){
             for(var j = 0; j < tests.length; j++){
-                if(_tag == "all" || (_tag != "all" && tests[j].tag && tests[j].tag == _tag)){
-                    if(tests.setup)
-                        runSetup(tests.setup.src, tests.setup.run);
+                if(_tag == "all" || (_tag != "all" && tests[j].tag && tests[j].tag == _tag))
                     setupTest(tests[j], radius, tolerance);
-                }
             }
         };
         var setupTestSuites = function(data){
@@ -213,6 +212,8 @@ var sundae = {};
                 if(data.setup)
                     runSetup(data.setup.src, data.setup.run);
                 for(var i = 0; i < data.testSuite.length; i++){
+                    if(data.testSuite[i].setup)
+                        runSetup(data.testSuite[i].setup.src, data.testSuite[i].setup.run);
                     if(data.testSuite[i].dependancyURL){
                         loadDeps(data.testSuite[i].dependancyURL, function(tests, radius, tol){
                             return function(){ setupTests(tests, radius, tol); };
@@ -226,13 +227,13 @@ var sundae = {};
         getJSON("tests.json", setupTestSuites);
     }
     //Global Utility Functions
-    function runSetup(src, func){
-        if(func){
-            func = eval(func);
-            if(src && typeof(func) === 'string')
-                getScript(src, func);
+    function runSetup(src, run){
+        if(run){
+            run = eval(run);
+            if(src && typeof(run) === 'string')
+                getScript(src, run);
             else if(typeof(run) === 'function')
-                func();
+                run();
         }
     }
     function showPasses(container, passes){
