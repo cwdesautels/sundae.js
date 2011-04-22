@@ -43,6 +43,7 @@
                     "name": "string",
                     "note": "string",
                     "tag": "string",
+                    "knowFail": "true OR false",
                     "firstCanvas" : {
                         "src" : {
                             "url" : "fileUrl",

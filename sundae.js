@@ -65,6 +65,9 @@ var sundae = {};
         while (n--){
             (function(me){
             temp = new Worker("slave.js");
+            temp.onerror = function (event){
+                postError("Worker", event.message);
+            }
             temp.onmessage = function (event){
                 var pix = event.data;
                 putPixels2D(pix.id, pix.data);
@@ -142,19 +145,25 @@ var sundae = {};
             }
         };
         function sourceLoader(obj, aCanvas, callback){
-            if(obj.src.type === "image"){
-                getImage(aCanvas, obj.src.url, callback);
+            if(obj.src.url && obj.src.type){
+                if(obj.src.type === "image"){
+                    getImage(aCanvas, obj.src.url, callback);
+                }
+                else if(obj.src.type === "script"){
+                    getScript(obj.src.url, function(){
+                        runTest(aCanvas.id, function(){ _w[obj.run](aCanvas, callback); });
+                    });
+                }
+                else if(obj.src.type === "json"){
+                    getJSON(obj.src.url, function(data){
+                        sourceRunner(data[obj.run], aCanvas, callback);
+                    });
+                }
+                else
+                    postError(test.name, "has an unsopported source type");
             }
-            else if(obj.src.type === "script"){
-                getScript(obj.src.url, function(){
-                    runTest(aCanvas.id, function(){ _w[obj.run](aCanvas, callback); });
-                });
-            }
-            else if(obj.src.type === "json"){
-                getJSON(obj.src.url, function(data){
-                    sourceRunner(data[obj.run], aCanvas, callback);
-                });
-            }
+            else
+                postError(test.name, "has a malformed source tag");
         }
         function sourceRunner(obj, aCanvas, callback){
             var testObj = eval(obj);
@@ -168,15 +177,21 @@ var sundae = {};
                     _w[testObj](aCanvas, callback);
                 });
             }
+            else
+                postError(test.name, "has a malformed run tag");
         }
         if(test.firstCanvas.src)
             sourceLoader(test.firstCanvas, a, function(){ whenDone("first");});
         else if(test.firstCanvas.run)
             sourceRunner(test.firstCanvas.run, a, function(){ whenDone("first");});
+        else
+            postError(test.name, "firstCanvas malformed, see README");
         if(test.secondCanvas.src)
             sourceLoader(test.secondCanvas, b, function(){ whenDone("second");});
         else if(test.secondCanvas.run)
             sourceRunner(test.secondCanvas.run, b, function(){ whenDone("second");});
+        else
+            postError(test.name, "secondCanvas malformed, see README");
     }
     function getTests(){
         var loadDeps = function(deps, callback){
@@ -196,10 +211,18 @@ var sundae = {};
                 getScript(deps, callback);
         };
         var setupTests = function(tests, radius, tolerance){
-            for(var j = 0; j < tests.length; j++){
-                if(_tag == "all" || (_tag != "all" && tests[j].tag && tests[j].tag == _tag))
-                    setupTest(tests[j], radius, tolerance);
+            if(tests){
+                for(var j = 0; j < tests.length; j++){
+                    if(tests[j]){
+                        if(_tag == "all" || (_tag != "all" && tests[j].tag && tests[j].tag == _tag))
+                            setupTest(tests[j], radius, tolerance);
+                    }
+                    else
+                        postError("test object [" + j + "]", "undefined, see README");
+                }
             }
+            else
+                postError("test array", "undefined, see README");
         };
         var setupTestSuites = function(data){
             if(data.testSuite){
@@ -219,10 +242,15 @@ var sundae = {};
                         setupTests(data.testSuite[i].test, data.testSuite[i].blurRadius, data.testSuite[i].tolerance);
                 }
             }
+            else
+                postError("testSuite", "undefined, see README");
         };
         getJSON("tests.json", setupTestSuites);
     }
     //Global Utility Functions
+    function postError(name, msg){
+        console.log("Error: [" + name + "] - " + msg);
+    }
     function runSetup(src, run){
         if(run){
             run = eval(run);
@@ -314,6 +342,7 @@ var sundae = {};
     function getImage(aCanvas, url, callback){
         var ctx = aCanvas.getContext("2d");
         var img = new Image();
+        img.onerror = function(){postError(url, "image load failed");};
         img.onload = function(){
             ctx.drawImage(img, 0, 0, img.width, img.height);
             callback();
@@ -325,6 +354,7 @@ var sundae = {};
             var r = new XMLHttpRequest();
             r.open("GET", src, true);
             r.overrideMimeType("application/json");
+            r.onerror = function(){postError(src, "JSON load failed");};
             r.onload = function(){
                 try{
                     callback(JSON.parse(r.responseText));
@@ -340,6 +370,7 @@ var sundae = {};
         if(!isLoaded(src)){
             var s = _w.document.createElement('script');
             s.type = 'text/javascript';
+            s.onerror = function(){postError(src, "script load failed");}
             s.onload = function(){
                 callback();
                 _w.document.head.removeChild(s);
@@ -383,6 +414,7 @@ var sundae = {};
                 return aCanvas.getContext('2d').getImageData(0, 0, aCanvas.width, aCanvas.height).data;
         }
         catch (e) {
+            postError(aCanvas.id, "failed to get pixels");
             return null;
         }
     }
