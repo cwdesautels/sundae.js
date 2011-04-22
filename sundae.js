@@ -35,6 +35,9 @@ var sundae = {};
     var _numWorkers = 4;
     var _loadedDeps = [];
     var _container;
+    var _results;
+    var _count = 0;
+    var _passCount = 0;
     var _pool = {};
     var _queue = {};
     _queue.setup = function (){
@@ -71,6 +74,7 @@ var sundae = {};
             temp.onmessage = function (event){
                 var pix = event.data;
                 putPixels2D(pix.id, pix.data);
+                showResults();
                 var data = _queue.pop();
                 if(data)
                     this.postMessage(data);
@@ -97,6 +101,8 @@ var sundae = {};
         //Tester setup
         var s = _w.document.getElementById("setup");
         _container = createDiv(_w.document.body, "sundae");
+        _results = createDiv(_container, "test_results");
+        _results.innerHTML = "Sundae running...";
         var b = createButton(s ? s : _container, "Hide All", function(){b.innerHTML=flipAllDivs(_container,b.innerHTML=="Show All"?"Hide All":"Show All");});
         var f = createButton(s ? s : _container, "Show Fails", function(){showPasses(_container,false); b.innerHTML="Show All";});
         var p = createButton(s ? s : _container, "Show Passes", function(){showPasses(_container,true); b.innerHTML="Show All";});
@@ -212,7 +218,7 @@ var sundae = {};
         };
         var setupTests = function(tests, radius, tolerance){
             if(tests){
-                for(var j = 0; j < tests.length; j++){
+                for(var j = 0, len = tests.length; j < len; j++){
                     if(tests[j]){
                         if(_tag == "all" || (_tag != "all" && tests[j].tag && tests[j].tag == _tag))
                             setupTest(tests[j], radius, tolerance);
@@ -230,7 +236,7 @@ var sundae = {};
                     sundae.setBlurRadius(data.blurRadius);
                 if(data.tolerance)
                     sundae.setTolerance(data.tolerance);
-                for(var i = 0; i < data.testSuite.length; i++){
+                for(var i = 0, len = data.testSuite.length; i < len; i++){
                     if(data.testSuite[i].setup)
                         runSetup(data.testSuite[i].setup.src, data.testSuite[i].setup.run);
                     if(data.testSuite[i].dependancyURL){
@@ -248,6 +254,18 @@ var sundae = {};
         getJSON("tests.json", setupTestSuites);
     }
     //Global Utility Functions
+    function showResults(){
+        _count++;
+        var total = -1;
+        for(var i = 0, len = _container.childNodes.length; i < len; i++){
+            if(_container.childNodes[i].type != "submit")
+                total++;
+        }
+        if(_count < total)
+            _results.innerHTML = "Sundae Running... [" + _count + "/" + total + "]";
+        else
+            _results.innerHTML = "Sundae Done! [" + _count + "/" + total + "] - " + _passCount + " PASSES";
+    }
     function postError(name, msg){
         console.log("Error: [" + name + "] - " + msg);
     }
@@ -265,22 +283,24 @@ var sundae = {};
         }
     }
     function showPasses(container, passes){
-        for(var i = 0, len = _container.childNodes.length; i < len; i++){
+        for(var i = 0, len = container.childNodes.length; i < len; i++){
             if(container.childNodes[i].type != "submit"){
                 for(var j = 0, dlen = container.childNodes[i].childNodes.length; j < dlen; j++){
-                    if(container.childNodes[i].childNodes[j].id.search(/diff$/) > -1){
-                        var pix = getPixels(container.childNodes[i].childNodes[j], false);
-                        if(pix[1] > 0)
-                            _container.childNodes[i].style.display = passes ? "block" : "none";
-                        else
-                            _container.childNodes[i].style.display = passes ? "none" : "block";
+                    if(container.childNodes[i].childNodes[j].id){
+                        if(container.childNodes[i].childNodes[j].id.search(/diff$/) > -1){
+                            var pix = getPixels(container.childNodes[i].childNodes[j], false);
+                            if(pix[1] > 0)
+                                container.childNodes[i].style.display = passes ? "block" : "none";
+                            else
+                                container.childNodes[i].style.display = passes ? "none" : "block";
+                        }
                     }
                 }
             }
         }
     }
     function flipAllDivs(container, str){
-        for(var i = 0, len = container.childNodes.length; i < len; i++){
+        for(var i = 1, len = container.childNodes.length; i < len; i++){
             if(container.childNodes[i].type != "submit"){
                 if(str === "Hide All")
                     container.childNodes[i].style.display = "block"
@@ -291,6 +311,8 @@ var sundae = {};
         return str;
     }
     function putPixels2D(id, pixels){
+        if(pixels[1] > 0)
+            _passCount++;
         var c = _w.document.getElementById(id);
         var cCtx = c.getContext('2d');
         var img = cCtx.getImageData(0, 0, c.width, c.height);
