@@ -29,6 +29,13 @@
             "blurRadius": numForSuiteRadius,
             "tolerance": numForSuiteTolerance,
             "dependancyURL": ["array of URL strings"] OR "just a single string",
+            "setup" : { //Run once after libraries are loaded and before tests start
+                "src": { 
+                    "url": "fileUrl" ,
+                    "type": "supported types-> json, script"
+                },
+                "run": {}
+            }
             "test": [
                 {
                     "blurRadius": numForTestRadius,

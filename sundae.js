@@ -169,8 +169,6 @@ var sundae = {};
                 });
             }
         }
-        if(test.setup)
-            runSetup(test.setup.src, test.setup.run);
         if(test.firstCanvas.src)
             sourceLoader(test.firstCanvas, a, function(){ whenDone("first");});
         else if(test.firstCanvas.run)
@@ -209,8 +207,6 @@ var sundae = {};
                     sundae.setBlurRadius(data.blurRadius);
                 if(data.tolerance)
                     sundae.setTolerance(data.tolerance);
-                if(data.setup)
-                    runSetup(data.setup.src, data.setup.run);
                 for(var i = 0; i < data.testSuite.length; i++){
                     if(data.testSuite[i].setup)
                         runSetup(data.testSuite[i].setup.src, data.testSuite[i].setup.run);
@@ -230,8 +226,12 @@ var sundae = {};
     function runSetup(src, run){
         if(run){
             run = eval(run);
-            if(src && typeof(run) === 'string')
-                getScript(src, run);
+            if(src && src.url && src.type && typeof(run) === 'string'){
+                if(src.type === 'script')
+                    getScript(src.url, run);
+                else if(src.type === 'json')
+                    getJSON(src.url, function(data){ data[run]; });
+            }
             else if(typeof(run) === 'function')
                 run();
         }
