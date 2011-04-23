@@ -143,6 +143,7 @@ var sundae = {};
                 pix.aId = a.id;
                 pix.bId = b.id;
                 pix.cId = c.id;
+                pix.knownFail = test.knownFail;
                 pix.eps = test.tolerance ? Math.abs((+test.tolerance)%101)/100 : tolerance ? Math.abs((+tolerance) % 101) / 100 : _epsilon;
                 pix.sig = Math.abs(test.blurRadius ? +test.blurRadius : radius ? +radius : _sigma);
                 pix.height = c.height;

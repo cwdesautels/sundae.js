@@ -30,7 +30,7 @@
             "tolerance": numForSuiteTolerance,
             "dependancyURL": ["array of URL strings"] OR "just a single string",
             "setup" : { //Run once after libraries are loaded and before tests start
-                "src": { 
+                "src": {
                     "url": "fileUrl" ,
                     "type": "supported types-> json, script"
                 },
@@ -43,7 +43,7 @@
                     "name": "string",
                     "note": "string",
                     "tag": "string",
-                    "knowFail": "true OR false",
+                    "knownFail": "true OR false",
                     "firstCanvas" : {
                         "src" : {
                             "url" : "fileUrl",

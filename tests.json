@@ -128,6 +128,8 @@
         },{
             "name": "Known Fail 5",
             "tag": "calibration",
+            "knownFail": "true",
+            "note": "testing known fail, should count as pass",
             "firstCanvas": {
                 "src" : { "url" : "resources/Calibration_Tests/default.png", "type" : "image"}
             },

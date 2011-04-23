@@ -85,24 +85,27 @@ onmessage = function (event) {
     }
     function comparePixels(pix) {
         var failed = false;
-        if (pix.a.length === pix.b.length) {
-            var j, len = pix.b.length;
-            for (j = 0; j < len; j += 4) {
-                if (Math.abs(pix.b[j] - pix.a[j]) <= eps &&
-                    Math.abs(pix.b[j + 1] - pix.a[j + 1]) <= eps &&
-                    Math.abs(pix.b[j + 2] - pix.a[j + 2]) <= eps &&
-                    Math.abs(pix.b[j + 3] - pix.a[j + 3]) <= eps) {
-                    pix.c[j] = pix.c[j + 1] = pix.c[j + 2] = pix.c[j + 3] = 0;
-                }
-                else {
-                    pix.c[j] = pix.c[j + 3] = 255;
-                    pix.c[j + 1] = pix.c[j + 2] = 0;
-                    failed = true;
+        var len = pix.b.length;
+        if(pix.knownFail != "true"){
+            if (pix.a.length === len) {
+                var j;
+                for (j = 0; j < len; j += 4) {
+                    if (Math.abs(pix.b[j] - pix.a[j]) <= eps &&
+                        Math.abs(pix.b[j + 1] - pix.a[j + 1]) <= eps &&
+                        Math.abs(pix.b[j + 2] - pix.a[j + 2]) <= eps &&
+                        Math.abs(pix.b[j + 3] - pix.a[j + 3]) <= eps) {
+                        pix.c[j] = pix.c[j + 1] = pix.c[j + 2] = pix.c[j + 3] = 0;
+                    }
+                    else {
+                        pix.c[j] = pix.c[j + 3] = 255;
+                        pix.c[j + 1] = pix.c[j + 2] = 0;
+                        failed = true;
+                    }
                 }
             }
-        }
-        else {
-            failed = true;
+            else {
+                failed = true;
+            }
         }
         if (!failed) {
             for (j = 0; j < len; j += 4) {
