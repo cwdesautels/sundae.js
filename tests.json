@@ -1,17 +1,5 @@
 {
     "testSuite": [{
-        "dependancyURL": "resources/Calibration_Tests/webglDemo.js",
-        "test": [{
-            "name": "WebGL",
-            "tag": "webgl",
-            "firstCanvas": {
-                "run" : "rightSideUp"
-            },
-            "secondCanvas": {
-                "run" : "rightSideUp"
-            }
-        }]
-    },{
         "dependancyURL": "resources/Calibration_Tests/test_1.js",
         "setup": { "run": "function(){console.log('suite setup run');}" },
         "blurRadius": "0",

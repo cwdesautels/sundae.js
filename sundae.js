@@ -67,21 +67,21 @@ var sundae = {};
         var temp;
         while (n--){
             (function(me){
-            temp = new Worker("slave.js");
-            temp.onerror = function (event){
-                postError("Worker", event.message);
-            }
-            temp.onmessage = function (event){
-                var pix = event.data;
-                putPixels2D(pix.id, pix.data);
-                showResults();
-                var data = _queue.pop();
-                if(data)
-                    this.postMessage(data);
-                else
-                    worker[me].status = true;
-            };
-            worker.push({"worker":temp, "status":true});
+                temp = new Worker("slave.js");
+                temp.onerror = function (event){
+                    postError("Worker", event.message);
+                }
+                temp.onmessage = function (event){
+                    var pix = event.data;
+                    putPixels2D(pix.id, pix.data);
+                    showResults();
+                    var data = _queue.pop();
+                    if(data)
+                        this.postMessage(data);
+                    else
+                        worker[me].status = true;
+                };
+                worker.push({"worker":temp, "status":true});
             })(n)
         }
     };
@@ -167,7 +167,7 @@ var sundae = {};
                     });
                 }
                 else
-                    postError(test.name, "has an unsopported source type");
+                    postError(test.name, "is an unsopported source type");
             }
             else
                 postError(test.name, "has a malformed source tag");
@@ -278,9 +278,13 @@ var sundae = {};
                     getScript(src.url, run);
                 else if(src.type === 'json')
                     getJSON(src.url, function(data){ data[run]; });
+                else
+                    postError("Setup " + run, "is an unsopported source type");
             }
             else if(typeof(run) === 'function')
                 run();
+            else
+                postError("Setup " + run, "has is malformed, see README");
         }
     }
     function showPasses(container, passes){
