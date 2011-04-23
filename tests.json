@@ -1,5 +1,36 @@
 {
     "testSuite": [{
+        "dependancyURL": [
+            "resources/XB-PointStream/mjs.js",
+            "resources/XB-PointStream/psapi.js",
+            "resources/XB-PointStream/parsers/asc.js",
+            "resources/XB-PointStream/parsers/psi.js",
+            "resources/XB-PointStream/parsers/pts.js"
+        ],
+        "test": [{
+            "name": "Acorn test 1",
+            "note": "this is a meaninful note",
+            "tag": "XB-point",
+            "firstCanvas" : {
+                "src" : { "url" : "resources/acorn_unlit/acorn_unlit.png", "type" : "image" }
+            },
+            "secondCanvas" : {
+                "src" : { "url" : "resources/acorn_unlit/acorn_unlit.js", "type" : "script" },
+                "run": "start1"
+            }
+        },{
+            "name": "Acorn test 2",
+            "note": "this is a meaninful note",
+            "tag": "XB-point",
+            "firstCanvas" : {
+                "src" : { "url" : "resources/psi/psi.png", "type" : "image" }
+            },
+            "secondCanvas" : {
+                "src" : { "url" : "resources/psi/psi.js", "type" : "script" },
+                "run": "start2"
+            }
+        }]
+    },{
         "dependancyURL": "resources/Calibration_Tests/test_1.js",
         "setup": { "run": "function(){console.log('suite setup run');}" },
         "blurRadius": "0",
