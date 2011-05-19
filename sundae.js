@@ -103,16 +103,19 @@ var sundae = {};
         _container = createDiv(_w.document.body, "sundae");
         _results = createDiv(_container, "test_results");
         _results.innerHTML = "Sundae running...";
-        var b = createButton(s ? s : _container, "Hide All", function(){b.innerHTML=flipAllDivs(_container,b.innerHTML=="Show All"?"Hide All":"Show All");});
-        var f = createButton(s ? s : _container, "Show Fails", function(){showPasses(_container,false); b.innerHTML="Show All";});
-        var p = createButton(s ? s : _container, "Show Passes", function(){showPasses(_container,true); b.innerHTML="Show All";});
+        var b = createButton(s ? s : _container, "Hide All", 
+            function(){b.innerHTML=flipAllDivs(_container,b.innerHTML=="Show All"?"Hide All":"Show All");});
+        var f = createButton(s ? s : _container, "Show Fails", 
+            function(){showPasses(_container,false); b.innerHTML="Show All";});
+        var p = createButton(s ? s : _container, "Show Passes", 
+            function(){showPasses(_container,true); b.innerHTML="Show All";});
         _queue.setup();
         _pool.setup(_numWorkers);
         //Tester starting point
         getTests();
     };
     function reportResult(r,t){
-        r.innerHTML = t.name + ": [" + t.first + "ms] vs " + "[" + t.second + "ms]";
+        r.innerHTML = t.name + ": [" + t.time.first + "ms] vs " + "[" + t.time.second + "ms]";
         if(t.note)
           r.innerHTML += " - " + t.note;
     }
@@ -123,16 +126,26 @@ var sundae = {};
         var a = createCanvas(d, name + "-first", 100, 100);
         var b = createCanvas(d, name + "-second", 100, 100);
         var c = createCanvas(d, name + "-diff", 100, 100);
-        test.first = 3;
-        test.second = 3;
+        test.time = {};
+        test.time.first = 3;
+        test.time.second = 3;
+        test.time.firstStart = 0;
+        test.time.secondStart = 0;
         function runTest(id, func){
             var who = id.substring(id.lastIndexOf('-')+1,id.length);
-            var startTime = (new Date).getTime();
+            test.time[who + "Start"] = (new Date).getTime();
             func();
-            test[who] = (new Date).getTime() - startTime;
         }
         var isDone = {"first" : false, "second" : false};
         var whenDone = function(who){
+            if(test[who + "Canvas"].src){
+                if(test[who + "Canvas"].src.type != "image"){
+                    test.time[who] = (new Date).getTime() - test.time[who + "Start"];
+                }
+	        }
+	        else{
+                test.time[who] = (new Date).getTime() - test.time[who + "Start"];
+	        }
             isDone[who] = true;
             if(isDone["first"] == true && isDone["second"] == true){
                 reportResult(r, test);
