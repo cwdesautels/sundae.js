@@ -126,6 +126,7 @@ var sundae = {};
         var a = createCanvas(d, name + "-first", 100, 100);
         var b = createCanvas(d, name + "-second", 100, 100);
         var c = createCanvas(d, name + "-diff", 100, 100);
+        r.innerHTML = test.name + ": Running...";
         test.time = {};
         test.time.first = 3;
         test.time.second = 3;
