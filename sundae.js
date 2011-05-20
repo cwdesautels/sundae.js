@@ -40,6 +40,7 @@ var sundae = {};
     var _passCount = 0;
     var _pool = {};
     var _queue = {};
+    var _jsonpCallbackCount = 0;
     _queue.setup = function (){
         var list = [];
         _queue.push = function(data){
@@ -177,6 +178,11 @@ var sundae = {};
                 }
                 else if(obj.src.type === "json"){
                     getJSON(obj.src.url, function(data){
+                        sourceRunner(data[obj.run], aCanvas, callback);
+                    });
+                }
+                else if(obj.src.type === "jsonp"){
+                    getJSONP(obj.src.url, function(data){
                         sourceRunner(data[obj.run], aCanvas, callback);
                     });
                 }
@@ -390,6 +396,28 @@ var sundae = {};
         }
         img.src = url;
     }
+    function getJSONP(src, callback){
+        if(!isLoaded(src)){
+            var functionName = "jsonCB_" + _jsonpCallbackCount++;
+            _w[functionName] = function(data){
+                if(typeof(data) === 'string'){
+                    try{
+                        callback(JSON.parse(data));
+                    }
+                    catch(e){
+                        try{
+                            callback(JSON.parse(JSON.stringify(data)));
+                            postError(src, 'JSON was loaded, but not valid');
+                        }
+                        catch(e){
+                            postError(src, 'JSONP data was invalid');
+                        }
+                    }
+                }
+            };
+            getScript(src + "callback=" + functionName, undef);
+        }
+    }
     function getJSON(src, callback){
         if(!isLoaded(src)){
             var r = new XMLHttpRequest();
@@ -400,7 +428,7 @@ var sundae = {};
                 try{
                     callback(JSON.parse(r.responseText));
                 }
-                catch(e){//Not valid JSON
+                catch(e){
                     callback(eval("(" + r.responseText + ")"));
                 }
             };
@@ -411,7 +439,7 @@ var sundae = {};
         if(!isLoaded(src)){
             var s = _w.document.createElement('script');
             s.type = 'text/javascript';
-            s.onerror = function(){postError(src, "script load failed");}
+            s.onerror = function(){postError(src, "script load failed");};
             s.onload = function(){
                 callback();
                 _w.document.head.removeChild(s);
