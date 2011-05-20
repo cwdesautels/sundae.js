@@ -32,7 +32,7 @@ onmessage = function (event) {
         pix.b = blur(pix.b, pix.height, pix.width);
     }
     comparePixels(pix);
-    postMessage({"id":pix.cId, "data":pix.c});
+    postMessage({'id':pix.cId, 'data':pix.c});
     function buildKernel() {
         var ss = pix.sig * pix.sig;
         var factor = 2 * Math.PI * ss;
@@ -86,7 +86,7 @@ onmessage = function (event) {
     function comparePixels(pix) {
         var failed = false;
         var len = pix.b.length;
-        if(pix.knownFail != "true"){
+        if(pix.knownFail != 'true'){
             if (pix.a.length === len) {
                 var j;
                 for (j = 0; j < len; j += 4) {

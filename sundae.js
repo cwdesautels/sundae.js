@@ -5,7 +5,7 @@
  * Copyright (c) 2011 Carlin Desautels
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
+ * of this software and associated documentation files (the 'Software'), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
@@ -14,7 +14,7 @@
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -29,7 +29,7 @@
 var sundae = {};
 (function (_w, undef) {
     //Enviroment variables
-    var _tag = "all";
+    var _tag = 'all';
     var _sigma = 2;
     var _epsilon = 0.05;
     var _numWorkers = 4;
@@ -68,9 +68,9 @@ var sundae = {};
         var temp;
         while (n--){
             (function(me){
-                temp = new Worker("slave.js");
+                temp = new Worker('slave.js');
                 temp.onerror = function (event){
-                    postError("Worker", event.message);
+                    postError('Worker', event.message);
                 }
                 temp.onmessage = function (event){
                     var pix = event.data;
@@ -82,7 +82,7 @@ var sundae = {};
                     else
                         worker[me].status = true;
                 };
-                worker.push({"worker":temp, "status":true});
+                worker.push({'worker':temp, 'status':true});
             })(n)
         }
     };
@@ -100,34 +100,34 @@ var sundae = {};
     };
     sundae.init = function(){
         //Tester setup
-        var s = _w.document.getElementById("setup");
-        _container = createDiv(_w.document.body, "sundae");
-        _results = createDiv(_container, "test_results");
-        _results.innerHTML = "Sundae running...";
-        var b = createButton(s ? s : _container, "Hide All", 
-            function(){b.innerHTML=flipAllDivs(_container,b.innerHTML=="Show All"?"Hide All":"Show All");});
-        var f = createButton(s ? s : _container, "Show Fails", 
-            function(){showPasses(_container,false); b.innerHTML="Show All";});
-        var p = createButton(s ? s : _container, "Show Passes", 
-            function(){showPasses(_container,true); b.innerHTML="Show All";});
+        var s = _w.document.getElementById('setup');
+        _container = createDiv(_w.document.body, 'sundae');
+        _results = createDiv(_container, 'test_results');
+        _results.innerHTML = 'Sundae running...';
+        var b = createButton(s ? s : _container, 'Hide All',
+            function(){b.innerHTML=flipAllDivs(_container,b.innerHTML=='Show All'?'Hide All':'Show All');});
+        var f = createButton(s ? s : _container, 'Show Fails',
+            function(){showPasses(_container,false); b.innerHTML='Show All';});
+        var p = createButton(s ? s : _container, 'Show Passes',
+            function(){showPasses(_container,true); b.innerHTML='Show All';});
         _queue.setup();
         _pool.setup(_numWorkers);
         //Tester starting point
         getTests();
     };
     function reportResult(r,t){
-        r.innerHTML = t.name + ": [" + t.time.first + "ms] vs " + "[" + t.time.second + "ms]";
+        r.innerHTML = t.name + ': [' + t.time.first + 'ms] vs ' + '[' + t.time.second + 'ms]';
         if(t.note)
-          r.innerHTML += " - " + t.note;
+          r.innerHTML += ' - ' + t.note;
     }
     function setupTest(test, radius, tolerance){
-        var name = test.name || "default";
+        var name = test.name || 'default';
         var d = createDiv(_container, name);
-        var r = createDiv(d, name + "-title");
-        var a = createCanvas(d, name + "-first", 100, 100);
-        var b = createCanvas(d, name + "-second", 100, 100);
-        var c = createCanvas(d, name + "-diff", 100, 100);
-        r.innerHTML = test.name + ": Running...";
+        var r = createDiv(d, name + '-title');
+        var a = createCanvas(d, name + '-first', 100, 100);
+        var b = createCanvas(d, name + '-second', 100, 100);
+        var c = createCanvas(d, name + '-diff', 100, 100);
+        r.innerHTML = test.name + ': Running...';
         test.time = {};
         test.time.first = 3;
         test.time.second = 3;
@@ -135,21 +135,21 @@ var sundae = {};
         test.time.secondStart = 0;
         function runTest(id, func){
             var who = id.substring(id.lastIndexOf('-')+1,id.length);
-            test.time[who + "Start"] = (new Date).getTime();
+            test.time[who + 'Start'] = (new Date).getTime();
             func();
         }
-        var isDone = {"first" : false, "second" : false};
+        var isDone = {'first' : false, 'second' : false};
         var whenDone = function(who){
-            if(test[who + "Canvas"].src){
-                if(test[who + "Canvas"].src.type != "image"){
-                    test.time[who] = (new Date).getTime() - test.time[who + "Start"];
+            if(test[who + 'Canvas'].src){
+                if(test[who + 'Canvas'].src.type != 'image'){
+                    test.time[who] = (new Date).getTime() - test.time[who + 'Start'];
                 }
 	        }
 	        else{
-                test.time[who] = (new Date).getTime() - test.time[who + "Start"];
+                test.time[who] = (new Date).getTime() - test.time[who + 'Start'];
 	        }
             isDone[who] = true;
-            if(isDone["first"] == true && isDone["second"] == true){
+            if(isDone['first'] == true && isDone['second'] == true){
                 reportResult(r, test);
                 var pix = {};
                 pix.a = getPixels(a, isWebgl(a));
@@ -168,57 +168,57 @@ var sundae = {};
         };
         function sourceLoader(obj, aCanvas, callback){
             if(obj.src.url && obj.src.type){
-                if(obj.src.type === "image"){
+                if(obj.src.type === 'image'){
                     getImage(aCanvas, obj.src.url, callback);
                 }
-                else if(obj.src.type === "script"){
+                else if(obj.src.type === 'script'){
                     getScript(obj.src.url, function(){
                         runTest(aCanvas.id, function(){ _w[obj.run](aCanvas, callback); });
                     });
                 }
-                else if(obj.src.type === "json"){
+                else if(obj.src.type === 'json'){
                     getJSON(obj.src.url, function(data){
                         sourceRunner(data[obj.run], aCanvas, callback);
                     });
                 }
-                else if(obj.src.type === "jsonp"){
+                else if(obj.src.type === 'jsonp'){
                     getJSONP(obj.src.url, function(data){
                         sourceRunner(data[obj.run], aCanvas, callback);
                     });
                 }
                 else
-                    postError(test.name, "is an unsopported source type");
+                    postError(test.name, 'is an unsopported source type');
             }
             else
-                postError(test.name, "has a malformed source tag");
+                postError(test.name, 'has a malformed source tag');
         }
         function sourceRunner(obj, aCanvas, callback){
             var testObj = eval(obj);
-            if(typeof(testObj) === "function"){
+            if(typeof(testObj) === 'function'){
                 runTest(aCanvas.id, function(){
                     testObj(aCanvas, callback);
                 });
             }
-            else if(typeof(testObj) === "string"){
+            else if(typeof(testObj) === 'string'){
                 runTest(aCanvas.id, function(){
                     _w[testObj](aCanvas, callback);
                 });
             }
             else
-                postError(test.name, "has a malformed run tag");
+                postError(test.name, 'has a malformed run tag');
         }
         if(test.firstCanvas.src)
-            sourceLoader(test.firstCanvas, a, function(){ whenDone("first");});
+            sourceLoader(test.firstCanvas, a, function(){ whenDone('first');});
         else if(test.firstCanvas.run)
-            sourceRunner(test.firstCanvas.run, a, function(){ whenDone("first");});
+            sourceRunner(test.firstCanvas.run, a, function(){ whenDone('first');});
         else
-            postError(test.name, "firstCanvas malformed, see README");
+            postError(test.name, 'firstCanvas malformed, see README');
         if(test.secondCanvas.src)
-            sourceLoader(test.secondCanvas, b, function(){ whenDone("second");});
+            sourceLoader(test.secondCanvas, b, function(){ whenDone('second');});
         else if(test.secondCanvas.run)
-            sourceRunner(test.secondCanvas.run, b, function(){ whenDone("second");});
+            sourceRunner(test.secondCanvas.run, b, function(){ whenDone('second');});
         else
-            postError(test.name, "secondCanvas malformed, see README");
+            postError(test.name, 'secondCanvas malformed, see README');
     }
     function getTests(){
         var loadDeps = function(deps, callback){
@@ -241,15 +241,15 @@ var sundae = {};
             if(tests){
                 for(var j = 0, len = tests.length; j < len; j++){
                     if(tests[j]){
-                        if(_tag == "all" || (_tag != "all" && tests[j].tag && tests[j].tag == _tag))
+                        if(_tag == 'all' || (_tag != 'all' && tests[j].tag && tests[j].tag == _tag))
                             setupTest(tests[j], radius, tolerance);
                     }
                     else
-                        postError("test object [" + j + "]", "undefined, see README");
+                        postError('test object [' + j + ']', 'undefined, see README');
                 }
             }
             else
-                postError("test array", "undefined, see README");
+                postError('test array', 'undefined, see README');
         };
         var setupTestSuites = function(data){
             if(data.testSuite){
@@ -270,25 +270,25 @@ var sundae = {};
                 }
             }
             else
-                postError("testSuite", "undefined, see README");
+                postError('testSuite', 'undefined, see README');
         };
-        getJSON("tests.json", setupTestSuites);
+        getJSON('tests.json', setupTestSuites);
     }
     //Global Utility Functions
     function showResults(){
         _count++;
         var total = -1;
         for(var i = 0, len = _container.childNodes.length; i < len; i++){
-            if(_container.childNodes[i].type != "submit")
+            if(_container.childNodes[i].type != 'submit')
                 total++;
         }
         if(_count < total)
-            _results.innerHTML = "Sundae Running... [" + _count + "/" + total + "]";
+            _results.innerHTML = 'Sundae Running... [' + _count + '/' + total + ']';
         else
-            _results.innerHTML = "Sundae Done! [" + _count + "/" + total + "] - " + _passCount + " PASSES";
+            _results.innerHTML = 'Sundae Done! [' + _count + '/' + total + '] - ' + _passCount + ' PASSES';
     }
     function postError(name, msg){
-        console.log("Error: [" + name + "] - " + msg);
+        console.log('Error: [' + name + '] - ' + msg);
     }
     function runSetup(src, run){
         if(run){
@@ -299,25 +299,25 @@ var sundae = {};
                 else if(src.type === 'json')
                     getJSON(src.url, function(data){ data[run]; });
                 else
-                    postError("Setup " + run, "is an unsopported source type");
+                    postError('Setup ' + run, 'is an unsopported source type');
             }
             else if(typeof(run) === 'function')
                 run();
             else
-                postError("Setup " + run, "has is malformed, see README");
+                postError('Setup ' + run, 'has is malformed, see README');
         }
     }
     function showPasses(container, passes){
         for(var i = 0, len = container.childNodes.length; i < len; i++){
-            if(container.childNodes[i].type != "submit"){
+            if(container.childNodes[i].type != 'submit'){
                 for(var j = 0, dlen = container.childNodes[i].childNodes.length; j < dlen; j++){
                     if(container.childNodes[i].childNodes[j].id){
                         if(container.childNodes[i].childNodes[j].id.search(/diff$/) > -1){
                             var pix = getPixels(container.childNodes[i].childNodes[j], false);
                             if(pix[1] > 0)
-                                container.childNodes[i].style.display = passes ? "block" : "none";
+                                container.childNodes[i].style.display = passes ? 'block' : 'none';
                             else
-                                container.childNodes[i].style.display = passes ? "none" : "block";
+                                container.childNodes[i].style.display = passes ? 'none' : 'block';
                         }
                     }
                 }
@@ -326,11 +326,11 @@ var sundae = {};
     }
     function flipAllDivs(container, str){
         for(var i = 1, len = container.childNodes.length; i < len; i++){
-            if(container.childNodes[i].type != "submit"){
-                if(str === "Hide All")
-                    container.childNodes[i].style.display = "block"
+            if(container.childNodes[i].type != 'submit'){
+                if(str === 'Hide All')
+                    container.childNodes[i].style.display = 'block'
                 else
-                    container.childNodes[i].style.display = "none"
+                    container.childNodes[i].style.display = 'none'
             }
         }
         return str;
@@ -347,20 +347,20 @@ var sundae = {};
         cCtx.putImageData(img, 0, 0);
     }
     function createButton(parent, text, callback){
-        var b = _w.document.createElement("button");
+        var b = _w.document.createElement('button');
         b.onclick=callback;
         b.innerHTML = text;
         parent.appendChild(b);
         return b;
     }
     function createDiv(parent, id){
-        var d = _w.document.createElement("div");
+        var d = _w.document.createElement('div');
         d.id = id;
         parent.appendChild(d);
         return d;
     }
     function createCanvas(parent, id, h, w){
-        var c = _w.document.createElement("canvas");
+        var c = _w.document.createElement('canvas');
         c.id = id;
         c.width = w;
         c.height = h;
@@ -368,7 +368,7 @@ var sundae = {};
         return c;
     }
     function isWebgl(aCanvas){
-        var contexts = ["webgl","experimental-webgl","moz-webgl","webkit-3d"];
+        var contexts = ['webgl','experimental-webgl','moz-webgl','webkit-3d'];
         var rc = false;
         for (var i = 0; !rc && i < contexts.length; i++){
             try{
@@ -387,9 +387,9 @@ var sundae = {};
             return true;
     }
     function getImage(aCanvas, url, callback){
-        var ctx = aCanvas.getContext("2d");
+        var ctx = aCanvas.getContext('2d');
         var img = new Image();
-        img.onerror = function(){postError(url, "image load failed");};
+        img.onerror = function(){postError(url, 'image load failed');};
         img.onload = function(){
             ctx.drawImage(img, 0, 0, img.width, img.height);
             callback();
@@ -398,7 +398,7 @@ var sundae = {};
     }
     function getJSONP(src, callback){
         if(!isLoaded(src)){
-            var functionName = "jsonCB_" + _jsonpCallbackCount++;
+            var functionName = 'jsonCB_' + _jsonpCallbackCount++;
             _w[functionName] = function(data){
                 if(typeof(data) === 'string'){
                     try{
@@ -415,21 +415,21 @@ var sundae = {};
                     }
                 }
             };
-            getScript(src + "callback=" + functionName, undef);
+            getScript(src + 'callback=' + functionName, undef);
         }
     }
     function getJSON(src, callback){
         if(!isLoaded(src)){
             var r = new XMLHttpRequest();
-            r.open("GET", src, true);
-            r.overrideMimeType("application/json");
-            r.onerror = function(){postError(src, "JSON load failed");};
+            r.open('GET', src, true);
+            r.overrideMimeType('application/json');
+            r.onerror = function(){postError(src, 'JSON load failed');};
             r.onload = function(){
                 try{
                     callback(JSON.parse(r.responseText));
                 }
                 catch(e){
-                    callback(eval("(" + r.responseText + ")"));
+                    callback(eval('(' + r.responseText + ')'));
                 }
             };
             r.send(null);
@@ -439,7 +439,7 @@ var sundae = {};
         if(!isLoaded(src)){
             var s = _w.document.createElement('script');
             s.type = 'text/javascript';
-            s.onerror = function(){postError(src, "script load failed");};
+            s.onerror = function(){postError(src, 'script load failed');};
             s.onload = function(){
                 callback();
                 _w.document.head.removeChild(s);
@@ -451,12 +451,12 @@ var sundae = {};
     function getPixels(aCanvas, isWebGL) {
         try {
             if (isWebGL) {
-                var context = aCanvas.getContext("experimental-webgl");
+                var context = aCanvas.getContext('experimental-webgl');
                 var data = null;
                 try{
                     data = context.readPixels(0, 0, aCanvas.width, aCanvas.height, context.RGBA, context.UNSIGNED_BYTE);
                     if(context.getError())
-                        throw new Error("API has changed");
+                        throw new Error('API has changed');
                 }
                 catch(e){
                     if(!data){
@@ -483,13 +483,13 @@ var sundae = {};
                 return aCanvas.getContext('2d').getImageData(0, 0, aCanvas.width, aCanvas.height).data;
         }
         catch (e) {
-            postError(aCanvas.id, "failed to get pixels");
+            postError(aCanvas.id, 'failed to get pixels');
             return null;
         }
     }
     // Opera createImageData fix
     try {
-        if (!("createImageData" in CanvasRenderingContext2D.prototype)) {
+        if (!('createImageData' in CanvasRenderingContext2D.prototype)) {
             CanvasRenderingContext2D.prototype.createImageData = function(sw,sh) { return this.getImageData(0,0,sw,sh); }
         }
     } catch(e) {}
