@@ -32,7 +32,7 @@
             "setup" : { //Run once after libraries are loaded and before tests start
                 "src": {
                     "url": "fileUrl" ,
-                    "type": "supported types-> json, script"
+                    "type": "supported types-> script"
                 },
                 "run": {}
             }
