@@ -27,11 +27,9 @@ this.onmessage = function (event) {
     var kernel, kernelSize, kernelSum, pix = event.data, eps = (+pix.eps) * 255;
     pix.sig = +pix.sig;
     function buildKernel() {
-        var ss = pix.sig * pix.sig;
-        var factor = 2 * Math.PI * ss;
+        var ss = pix.sig * pix.sig, factor = 2 * Math.PI * ss, i = 0, j;
         kernel = [];
         kernel.push([]);
-        var i = 0, j;
         do {
             var g = Math.exp(-(i * i) / (2 * ss)) / factor;
             if (g < 1e-3) {
