@@ -24,7 +24,7 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 this.onmessage = function (event) {
-    var kernel, kernelSize, kernelSum, pix = event.data, eps = (+pix.eps)*255;
+    var kernel, kernelSize, kernelSum, pix = event.data, eps = (+pix.eps) * 255;
     pix.sig = +pix.sig;
     function buildKernel() {
         var ss = pix.sig * pix.sig;
@@ -34,7 +34,9 @@ this.onmessage = function (event) {
         var i = 0, j;
         do {
             var g = Math.exp(-(i * i) / (2 * ss)) / factor;
-            if (g < 1e-3) break;
+            if (g < 1e-3) {
+                break;
+            }
             kernel[0].push(g);
             ++i;
         } while (i < 7);
@@ -59,9 +61,13 @@ this.onmessage = function (event) {
             for (var x = 0; x < width; ++x) {
                 var r = 0, g = 0, b = 0, a = 0;
                 for (var j = 1 - kernelSize; j < kernelSize; ++j) {
-                    if (y + j < 0 || y + j >= height) continue;
+                    if (y + j < 0 || y + j >= height) {
+                        continue;
+                    }
                     for (var i = 1 - kernelSize; i < kernelSize; ++i) {
-                        if (x + i < 0 || x + i >= width) continue;
+                        if (x + i < 0 || x + i >= width) {
+                            continue;
+                        }
                         r += data[4 * ((y + j) * width + (x + i)) + 0] * kernel[Math.abs(j)][Math.abs(i)];
                         g += data[4 * ((y + j) * width + (x + i)) + 1] * kernel[Math.abs(j)][Math.abs(i)];
                         b += data[4 * ((y + j) * width + (x + i)) + 2] * kernel[Math.abs(j)][Math.abs(i)];
@@ -78,7 +84,7 @@ this.onmessage = function (event) {
     }
     function comparePixels(pix) {
         var failed = false, len = pix.b.length, j;
-        if(pix.knownFail !== 'true'){
+        if (pix.knownFail !== 'true') {
             if (pix.a.length === len) {
                 for (j = 0; j < len; j += 4) {
                     if (Math.abs(pix.b[j] - pix.a[j]) <= eps &&
@@ -100,15 +106,15 @@ this.onmessage = function (event) {
         }
         if (!failed) {
             for (j = 0; j < len; j += 4) {
-                pix.c[j + 1] = pix.c[j+3] = 255;
+                pix.c[j + 1] = pix.c[j + 3] = 255;
             }
         }
     }
-    if(pix.sig){
+    if (pix.sig) {
         buildKernel();
         pix.a = blur(pix.a, pix.height, pix.width);
         pix.b = blur(pix.b, pix.height, pix.width);
     }
     comparePixels(pix);
-    this.postMessage({'id':pix.cId, 'data':pix.c});
+    this.postMessage({'id' : pix.cId, 'data' : pix.c});
 };
