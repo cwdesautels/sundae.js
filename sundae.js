@@ -26,21 +26,21 @@
  * about:config
  * security.fileuri.strict_origin_policy == false
 */
-var sundae = {};
 (function (_w, undef) {
     //Enviroment variables
-    var _tag = 'all';
-    var _sigma = 2;
-    var _epsilon = 0.05;
-    var _numWorkers = 4;
-    var _loadedDeps = [];
-    var _container;
-    var _results;
-    var _count = 0;
-    var _passCount = 0;
-    var _pool = {};
-    var _queue = {};
-    var _jsonpCallbackCount = 0;
+    var sundae,
+        _tag = 'all',
+        _sigma = 2,
+        _epsilon = 0.05,
+        _numWorkers = 4,
+        _loadedDeps = [],
+        _container,
+        _results,
+        _count = 0,
+        _passCount = 0,
+        _pool = {},
+        _queue = {},
+        _jsonpCallbackCount = 0;
     //Global Utility Functions
     function postError(name, msg) {
         console.log('Error: [' + name + '] - ' + msg);
@@ -515,44 +515,47 @@ var sundae = {};
             setup(n);
         }
     };
-    sundae.setBlurRadius = function (s) {
-        if (s) {
-            _sigma = Math.abs(+s);
+    sundae = {
+        setBlurRadius: function (s) {
+            if (s) {
+                _sigma = Math.abs(+s);
+            }
+        },
+        setTolerance: function (e) {
+            if (e) {
+                _epsilon = (Math.abs(+e) % 101) / 100;
+            }
+        },
+        setTestTag: function (t) {
+            if (t) {
+                _tag = '' + t;
+            }
+        },
+        init: function () {
+            //Tester setup
+            var s = _w.document.getElementById('setup');
+            _container = createDiv(_w.document.body, 'sundae');
+            _results = createDiv(_container, 'test_results');
+            _results.innerHTML = 'Sundae running...';
+            var b = createButton(s ? s : _container, 'Hide All',
+                function () {
+                    b.innerHTML = flipAllDivs(_container, b.innerHTML === 'Show All' ? 'Hide All' : 'Show All');
+                });
+            var f = createButton(s ? s : _container, 'Show Fails',
+                function () {
+                    showPasses(_container, false);
+                    b.innerHTML = 'Show All';
+                });
+            var p = createButton(s ? s : _container, 'Show Passes',
+                function () {
+                    showPasses(_container, true);
+                    b.innerHTML = 'Show All';
+                });
+            _queue.setup();
+            _pool.setup(_numWorkers);
+            //Tester starting point
+            getTests();
         }
     };
-    sundae.setTolerance = function (e) {
-        if (e) {
-            _epsilon = (Math.abs(+e) % 101) / 100;
-        }
-    };
-    sundae.setTestTag = function (t) {
-        if (t) {
-            _tag = '' + t;
-        }
-    };
-    sundae.init = function () {
-        //Tester setup
-        var s = _w.document.getElementById('setup');
-        _container = createDiv(_w.document.body, 'sundae');
-        _results = createDiv(_container, 'test_results');
-        _results.innerHTML = 'Sundae running...';
-        var b = createButton(s ? s : _container, 'Hide All',
-            function () {
-                b.innerHTML = flipAllDivs(_container, b.innerHTML === 'Show All' ? 'Hide All' : 'Show All');
-            });
-        var f = createButton(s ? s : _container, 'Show Fails',
-            function () {
-                showPasses(_container, false);
-                b.innerHTML = 'Show All';
-            });
-        var p = createButton(s ? s : _container, 'Show Passes',
-            function () {
-                showPasses(_container, true);
-                b.innerHTML = 'Show All';
-            });
-        _queue.setup();
-        _pool.setup(_numWorkers);
-        //Tester starting point
-        getTests();
-    };
+    _w.sundae = sundae;
 })(window);
