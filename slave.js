@@ -22,26 +22,19 @@
  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-onmessage = function (event) {
-    var kernel, kernelSize, kernelSum, pix = event.data, eps = (+pix.eps)*255;
+ */
+this.onmessage = function (event) {
+    var kernel, kernelSize, kernelSum, pix = event.data, eps = (+pix.eps) * 255;
     pix.sig = +pix.sig;
-    if(pix.sig){
-        buildKernel();
-        pix.a = blur(pix.a, pix.height, pix.width);
-        pix.b = blur(pix.b, pix.height, pix.width);
-    }
-    comparePixels(pix);
-    postMessage({"id":pix.cId, "data":pix.c});
     function buildKernel() {
-        var ss = pix.sig * pix.sig;
-        var factor = 2 * Math.PI * ss;
+        var ss = pix.sig * pix.sig, factor = 2 * Math.PI * ss, i = 0, j;
         kernel = [];
         kernel.push([]);
-        var i = 0, j;
         do {
             var g = Math.exp(-(i * i) / (2 * ss)) / factor;
-            if (g < 1e-3) break;
+            if (g < 1e-3) {
+                break;
+            }
             kernel[0].push(g);
             ++i;
         } while (i < 7);
@@ -49,8 +42,8 @@ onmessage = function (event) {
         for (j = 1; j < kernelSize; ++j) {
             kernel.push([]);
             for (i = 0; i < kernelSize; ++i) {
-                var g = Math.exp(-(i * i + j * j) / (2 * ss)) / factor;
-                kernel[j].push(g);
+                var h = Math.exp(-(i * i + j * j) / (2 * ss)) / factor;
+                kernel[j].push(h);
             }
         }
         kernelSum = 0;
@@ -65,10 +58,14 @@ onmessage = function (event) {
         for (var y = 0; y < height; ++y) {
             for (var x = 0; x < width; ++x) {
                 var r = 0, g = 0, b = 0, a = 0;
-                for (j = 1 - kernelSize; j < kernelSize; ++j) {
-                    if (y + j < 0 || y + j >= height) continue;
-                    for (i = 1 - kernelSize; i < kernelSize; ++i) {
-                        if (x + i < 0 || x + i >= width) continue;
+                for (var j = 1 - kernelSize; j < kernelSize; ++j) {
+                    if (y + j < 0 || y + j >= height) {
+                        continue;
+                    }
+                    for (var i = 1 - kernelSize; i < kernelSize; ++i) {
+                        if (x + i < 0 || x + i >= width) {
+                            continue;
+                        }
                         r += data[4 * ((y + j) * width + (x + i)) + 0] * kernel[Math.abs(j)][Math.abs(i)];
                         g += data[4 * ((y + j) * width + (x + i)) + 1] * kernel[Math.abs(j)][Math.abs(i)];
                         b += data[4 * ((y + j) * width + (x + i)) + 2] * kernel[Math.abs(j)][Math.abs(i)];
@@ -84,11 +81,9 @@ onmessage = function (event) {
         return newData;
     }
     function comparePixels(pix) {
-        var failed = false;
-        var len = pix.b.length;
-        if(pix.knownFail != "true"){
+        var failed = false, len = pix.b.length, j;
+        if (pix.knownFail !== 'true') {
             if (pix.a.length === len) {
-                var j;
                 for (j = 0; j < len; j += 4) {
                     if (Math.abs(pix.b[j] - pix.a[j]) <= eps &&
                         Math.abs(pix.b[j + 1] - pix.a[j + 1]) <= eps &&
@@ -109,8 +104,15 @@ onmessage = function (event) {
         }
         if (!failed) {
             for (j = 0; j < len; j += 4) {
-                pix.c[j + 1] = pix.c[j+3] = 255;
+                pix.c[j + 1] = pix.c[j + 3] = 255;
             }
         }
     }
+    if (pix.sig) {
+        buildKernel();
+        pix.a = blur(pix.a, pix.height, pix.width);
+        pix.b = blur(pix.b, pix.height, pix.width);
+    }
+    comparePixels(pix);
+    this.postMessage({'id' : pix.cId, 'data' : pix.c});
 };
