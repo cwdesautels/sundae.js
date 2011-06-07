@@ -10,11 +10,7 @@
     <div id='setup'>
       <table><tr>
         <td>Run Tests:</td>
-        <td>
-          <select id='type'>
-            <option value='all' selected='selected'>All</option>
-          </select>
-        </td>
+        <td><select id='type'/></td>
       </tr><tr>
         <td>Tolerance:</td>
         <td><input type='text' size='2' id='epsilon' value='5'/>%</td>
@@ -25,31 +21,20 @@
     </div>
     <script type='text/javascript'>
             var d = document;
-            var b = d.createElement('input');
-            b.setAttribute('type', 'Button');
-            b.setAttribute('value', 'Begin Tests');
-            b.setAttribute('onClick', 'beginTester();');
-            d.getElementById('setup').appendChild(b);
-            getJSON('tests.json', function (data) {
-                var found = false;
-                var t = d.getElementById('type'); ;
-                for (var i = 0; data.testSuite && i < data.testSuite.length; i++) {
-                    for (var j = 0; data.testSuite[i].test && j < data.testSuite[i].test.length; j++) {
-                        if (data.testSuite[i].test[j].tag) {
-                            for (var n = 0; n < t.length; n++) {
-                                if (t[n].value == data.testSuite[i].test[j].tag)
-                                    found = true;
-                            }
-                            if (!found) {
-                                var opt = d.createElement('option');
-                                opt.text = opt.value = data.testSuite[i].test[j].tag;
-                                t.options.add(opt);
-                            }
-                            found = false;
-                        }
-                    }
-                }
-            });
+            //Setting dropdownlist
+            var t = d.getElementById('type');
+            var i, opt, tags = sundae.getTestTags(), len = tags.length;
+            for (i = 0; i < len; i++) {
+                opt = d.createElement('option');
+                opt.text = opt.value = tags[i];
+                t.options.add(opt);
+            }
+            //Creating start button
+            var b = createButton(d.body, 'Begin Tests', beginTester);
+            createButton(d.body, 'Hide All', sundae.eventHideAll);
+            createButton(d.body, 'Show All', sundae.eventShowAll);
+            createButton(d.body, 'Show Passes', sundae.eventShowPasses);
+            createButton(d.body, 'Show Fails', sundae.eventShowFails);
             function beginTester() {
                 //Optional Global Setters
                 sundae.setBlurRadius(d.getElementById('sigma').value);
@@ -59,20 +44,12 @@
                 sundae.init();
                 b.disabled = true;
             }
-            //Duplicate of private function within library
-            function getJSON(src, callback){
-                var r = new XMLHttpRequest();
-                r.open('GET', src, true);
-                r.overrideMimeType('application/json');
-                r.onload = function(){
-                    try{
-                        callback(JSON.parse(r.responseText));
-                    }
-                    catch(e){
-                        callback(eval('(' + r.responseText + ')'));
-                    }
-                };
-                r.send(null);
+            function createButton(parent, text, callback) {
+                var b = window.document.createElement('button');
+                b.onclick = callback;
+                b.innerHTML = text;
+                parent.appendChild(b);
+                return b;
             }
     </script>
   </body>
