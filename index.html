@@ -21,7 +21,7 @@
     </div>
     <script type='text/javascript'>
             var d = document;
-            //Creating dropdownlist
+            //Setting dropdownlist
             var t = d.getElementById('type');
             var i, opt, tags = sundae.getTestTags(), len = tags.length;
             for (i = 0; i < len; i++) {
@@ -31,10 +31,10 @@
             }
             //Creating start button
             var b = createButton(d.body, 'Begin Tests', beginTester);
-            //createButton(d.body, 'Hide All', sundae.eventHideAll);
-            //createButton(d.body, 'Show All', sundae.eventShowAll);
-            //createButton(d.body, 'Show Passes', sundae.eventShowPasses);
-            //createButton(d.body, 'Show Passes', sundae.eventShowFails);
+            createButton(d.body, 'Hide All', sundae.eventHideAll);
+            createButton(d.body, 'Show All', sundae.eventShowAll);
+            createButton(d.body, 'Show Passes', sundae.eventShowPasses);
+            createButton(d.body, 'Show Fails', sundae.eventShowFails);
             function beginTester() {
                 //Optional Global Setters
                 sundae.setBlurRadius(d.getElementById('sigma').value);

@@ -33,7 +33,7 @@ var SundaeTestsFile = 'tests.json';
     var sundae,
         _file = SundaeTestsFile,
         _data,
-        _tag = 'all',
+        _tag = 'All',
         _sigma = 2,
         _epsilon = 0.05,
         _numWorkers = 4,
@@ -237,7 +237,6 @@ var SundaeTestsFile = 'tests.json';
                 }
             }
         }
-        return str;
     }
     function putPixels2D(id, pixels) {
         if (pixels[1] > 0) {
@@ -566,7 +565,7 @@ var SundaeTestsFile = 'tests.json';
             }
             return tagList;
         },
-        init: function (testsFile) {
+        init: function () {
             //Tester setup
             _container = createDiv(_w.document.body, 'sundae');
             _results = createDiv(_container, 'test_results');
