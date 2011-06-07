@@ -26,9 +26,13 @@
  * about:config
  * security.fileuri.strict_origin_policy == false
 */
+var SundaeTestsFile = 'tests.json';
+
 (function (_w, undef) {
     //Enviroment variables
     var sundae,
+        _file = SundaeTestsFile,
+        _data,
         _tag = 'all',
         _sigma = 2,
         _epsilon = 0.05,
@@ -116,7 +120,13 @@
                     callback(JSON.parse(r.responseText));
                 }
                 catch (e) {
-                    callback(eval('(' + r.responseText + ')'));
+                    try {
+                        callback(eval('(' + r.responseText + ')'));
+                        postError(src, 'JSON was loaded, but not valid');
+                    }
+                    catch (e) {
+                        postError(src, 'JSON data was invalid');
+                    }
                 }
             };
             r.send(null);
@@ -197,18 +207,18 @@
             }
         }
     }
-    function showPasses(container, passes) {
-        for (var i = 0, len = container.childNodes.length; i < len; i++) {
-            if (container.childNodes[i].type !== 'submit') {
-                for (var j = 0, dlen = container.childNodes[i].childNodes.length; j < dlen; j++) {
-                    if (container.childNodes[i].childNodes[j].id) {
-                        if (container.childNodes[i].childNodes[j].id.search(/diff$/) > -1) {
-                            var pix = getPixels(container.childNodes[i].childNodes[j], false);
+    function showPasses(passes) {
+        for (var i = 0, len = _container.childNodes.length; i < len; i++) {
+            if (_container.childNodes[i].type !== 'submit') {
+                for (var j = 0, dlen = _container.childNodes[i].childNodes.length; j < dlen; j++) {
+                    if (_container.childNodes[i].childNodes[j].id) {
+                        if (_container.childNodes[i].childNodes[j].id.search(/diff$/) > -1) {
+                            var pix = getPixels(_container.childNodes[i].childNodes[j], false);
                             if (pix[1] > 0) {
-                                container.childNodes[i].style.display = passes ? 'block' : 'none';
+                                _container.childNodes[i].style.display = passes ? 'block' : 'none';
                             }
                             else {
-                                container.childNodes[i].style.display = passes ? 'none' : 'block';
+                                _container.childNodes[i].style.display = passes ? 'none' : 'block';
                             }
                         }
                     }
@@ -216,14 +226,14 @@
             }
         }
     }
-    function flipAllDivs(container, str) {
-        for (var i = 1, len = container.childNodes.length; i < len; i++) {
-            if (container.childNodes[i].type !== 'submit') {
-                if (str === 'Hide All') {
-                    container.childNodes[i].style.display = 'block';
+    function flipAllDivs(show) {
+        for (var i = 1, len = _container.childNodes.length; i < len; i++) {
+            if (_container.childNodes[i].type !== 'submit') {
+                if (show) {
+                    _container.childNodes[i].style.display = 'block';
                 }
                 else {
-                    container.childNodes[i].style.display = 'none';
+                    _container.childNodes[i].style.display = 'none';
                 }
             }
         }
@@ -240,13 +250,6 @@
             img.data[i] = pixels[i];
         }
         cCtx.putImageData(img, 0, 0);
-    }
-    function createButton(parent, text, callback) {
-        var b = _w.document.createElement('button');
-        b.onclick = callback;
-        b.innerHTML = text;
-        parent.appendChild(b);
-        return b;
     }
     function createDiv(parent, id) {
         var d = _w.document.createElement('div');
@@ -272,6 +275,11 @@
             catch (e) {}
         }
         return rc;
+    }
+    function getNsetData (file) {
+        getJSON(file, function (data) {
+            _data = data;
+        });
     }
     //Tester engine
     function reportResult(r, t) {
@@ -399,7 +407,7 @@
             postError(test.name, 'secondCanvas malformed, see README');
         }
     }
-    function getTests() {
+    function startTester() {
         var loadDeps = function (deps, callback) {
             var totalLen = 0, totalLoaded = 0;
             var allDepsLoaded = function () {
@@ -422,7 +430,7 @@
             if (tests) {
                 for (var j = 0, len = tests.length; j < len; j++) {
                     if (tests[j]) {
-                        if (_tag === 'all' || (_tag !== 'all' && tests[j].tag && tests[j].tag === _tag)) {
+                        if (_tag === 'All' || (_tag !== 'All' && tests[j].tag && tests[j].tag === _tag)) {
                             setupTest(tests[j], radius, tolerance);
                         }
                     }
@@ -436,27 +444,27 @@
             }
         };
         var setupTestSuites = function (data) {
-            if (data.testSuite) {
+            if (_data && _data.testSuite) {
                 var setup = function (tests, radius, tol) {
                     return function () {
                         setupTests(tests, radius, tol);
                     };
                 };
-                if (data.blurRadius) {
-                    sundae.setBlurRadius(data.blurRadius);
+                if (_data.blurRadius) {
+                    sundae.setBlurRadius(_data.blurRadius);
                 }
-                if (data.tolerance) {
-                    sundae.setTolerance(data.tolerance);
+                if (_data.tolerance) {
+                    sundae.setTolerance(_data.tolerance);
                 }
-                for (var i = 0, len = data.testSuite.length; i < len; i++) {
-                    if (data.testSuite[i].setup) {
-                        runSetup(data.testSuite[i].setup.src, data.testSuite[i].setup.run);
+                for (var i = 0, len = _data.testSuite.length; i < len; i++) {
+                    if (_data.testSuite[i].setup) {
+                        runSetup(_data.testSuite[i].setup.src, _data.testSuite[i].setup.run);
                     }
-                    if (data.testSuite[i].dependancyURL) {
-                        loadDeps(data.testSuite[i].dependancyURL, setup(data.testSuite[i].test, data.testSuite[i].blurRadius, data.testSuite[i].tolerance));
+                    if (_data.testSuite[i].dependancyURL) {
+                        loadDeps(_data.testSuite[i].dependancyURL, setup(_data.testSuite[i].test, _data.testSuite[i].blurRadius, _data.testSuite[i].tolerance));
                     }
                     else {
-                        setupTests(data.testSuite[i].test, data.testSuite[i].blurRadius, data.testSuite[i].tolerance);
+                        setupTests(_data.testSuite[i].test, _data.testSuite[i].blurRadius, _data.testSuite[i].tolerance);
                     }
                 }
             }
@@ -464,7 +472,7 @@
                 postError('testSuite', 'undefined, see README');
             }
         };
-        getJSON('tests.json', setupTestSuites);
+        setupTestSuites(_data);
     }
     //Tester Setup
     _queue.setup = function () {
@@ -531,31 +539,44 @@
                 _tag = '' + t;
             }
         },
-        init: function () {
+        eventHideAll: function () {
+            flipAllDivs(false);
+        },
+        eventShowAll: function () {
+            flipAllDivs(true);
+        },
+        eventShowPasses: function () {
+            showPasses(true);
+        },
+        eventShowFails: function () {
+            showPasses(false);
+        },
+        getTestTags: function () {
+            var tagList = [], i, j, tlen, slen, tag = undef;
+            tagList.push('All');
+            if (_data && _data.testSuite) {
+                for (i = 0, slen = _data.testSuite.length; i < slen; i++) {
+                    for (j = 0, tlen = _data.testSuite[i].test.length; _data.testSuite[i].test && j < tlen; j++) {
+                        tag = _data.testSuite[i].test[j].tag;
+                        if (tag && tagList.indexOf(tag) === -1) {
+                            tagList.push(tag);
+                        }
+                    }
+                }
+            }
+            return tagList;
+        },
+        init: function (testsFile) {
             //Tester setup
-            var s = _w.document.getElementById('setup');
             _container = createDiv(_w.document.body, 'sundae');
             _results = createDiv(_container, 'test_results');
             _results.innerHTML = 'Sundae running...';
-            var b = createButton(s ? s : _container, 'Hide All',
-                function () {
-                    b.innerHTML = flipAllDivs(_container, b.innerHTML === 'Show All' ? 'Hide All' : 'Show All');
-                });
-            var f = createButton(s ? s : _container, 'Show Fails',
-                function () {
-                    showPasses(_container, false);
-                    b.innerHTML = 'Show All';
-                });
-            var p = createButton(s ? s : _container, 'Show Passes',
-                function () {
-                    showPasses(_container, true);
-                    b.innerHTML = 'Show All';
-                });
             _queue.setup();
             _pool.setup(_numWorkers);
             //Tester starting point
-            getTests();
+            startTester();
         }
     };
+    getNsetData(_file);
     _w.sundae = sundae;
 })(window);

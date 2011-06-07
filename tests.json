@@ -33,7 +33,7 @@
     },{
         "dependancyURL": "resources/Calibration_Tests/test_1.js",
         "setup": { "run": "function(){console.log('suite setup run');}" },
-        "blurRadius": "0",
+        "blurRadius": 0,
         "test": [{
             "name": "Load test 1",
             "note": "blur == 0",
