@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+		<title>Sundae.js Example Page</title>
+		<link type="text/css" href="css/smoothness/jquery-ui-1.8.13.custom.css" rel="stylesheet" />	
+		<script type="text/javascript" src="js/jquery-1.5.1.min.js"></script>
+		<script type="text/javascript" src="js/jquery-ui-1.8.13.custom.min.js"></script>
+		<script type='text/javascript' src='sundae.js' ></script>
+		<script type="text/javascript">
+            var updateTolerance = function(event, ui){
+                var tolerance = ui.value;
+                $("#toleranceAmount").val(tolerance + "%");
+                sundae.setTolerance(tolerance);
+            };
+            var updateBlur = function(event, ui){
+                var blur = ui.value;
+                $("#blurAmount").val(blur + "px");
+                if (blur === 5) {
+                    blur = 15;
+                }
+                sundae.setBlurRadius(blur);
+            };
+			$(function(){
+				$("#radioset").buttonset();
+				$("#radio1").click(function(){
+				    sundae.eventShowAll();
+				});
+				$("#radio2").click(function(){
+				    sundae.eventHideAll();
+				});
+				$("#radio3").click(function(){
+				    sundae.eventShowPasses();
+				});
+				$("#radio4").click(function(){
+				    sundae.eventShowFails();
+				});
+				$("#button").button().click(function(){
+				    sundae.init();
+				});
+				$("#tolerance").slider({
+			        orientation: "horizontal",
+			        range: "min",
+			        max: 100,
+			        value: 5,
+			        slide: updateTolerance
+		        });
+		        $("#toleranceAmount").val($("#tolerance").slider("value") + "%");
+		        $("#blur").slider({
+			        orientation: "horizontal",
+			        range: "min",
+			        max: 5,
+			        value: 2,
+			        slide: updateBlur
+		        });
+		        $("#blurAmount").val($("#blur").slider("value") + "px");
+			});
+			var d = document;
+            //Setting dropdownlist
+            var t = d.getElementById('type');
+            var i, opt, tags = sundae.getTestTags(), len = tags.length;
+            for (i = 0; i < len; i++) {
+                opt = d.createElement('option');
+                opt.text = opt.value = tags[i];
+                t.options.add(opt);
+            }
+		</script>
+		<style type="text/css">
+			/*demo page css*/
+			
+            #tolerance, #blur {
+		        width: 200px;
+		        margin: 5px;
+	        }
+			#setup { padding: 10px !important; }
+		</style>	
+	</head>
+	<body style="font: 62.5% 'Trebuchet MS', sans-serif; margin: 50px;">
+	<h1>Welcome to Sundae.js!</h1>
+	<p style="font-size: 1.3em; line-height: 1.5; margin: 1em 0; width: 50%;">This page demonstrates using <a href="sundae.js">Sundae.js</a> with its bundled test suites. It was built using: a minified versions of <a href="js/jquery-1.5.1.min.js">jQuery</a>, a personalized copy of <a href="js/jquery-ui-1.8.13.custom.min.js">jQuery UI</a>, and <a href="css/smoothness/jquery-ui-1.8.13.custom.css">JQuery CSS</a>. For further instructions on using Sundae referr to the <a href="README">README</a> and for development information see <a href="https://github.com/cwdesautels/sundae.js">github</a> or contribute by filing bugs at <a href="http://sundae.lighthouseapp.com/projects/68207-sundaejs/overview">Lighthouse</a>.</p>	
+
+	<p style="font-weight: bold; margin: 2em 0 1em; font-size: 1.3em;">Settings:</p>
+		<!-- Button -->
+		<div class="setup">
+	        <p>
+	            <label for="toleranceAmount">Tolerance:</label>
+                <input type="text" id="toleranceAmount" style="border:0; color:#f6931f; font-weight:bold;" />
+            </p>
+            <div id="tolerance"></div>
+            <p>
+	            <label for="blurAmount">Blur Radius:</label>
+                <input type="text" id="blurAmount" style="border:0; color:#f6931f; font-weight:bold;" />
+            </p>
+            <div id="blur"></div>
+            <div style="margin-top: 1em">
+	            <button style="float: left; clear: left;" id="button">Start</button>
+	            <div id="radios">
+	                <form>
+		                <div id="radioset">
+			                <input type="radio" id="radio1" name="radio" checked="checked"/><label for="radio1">Show All</label>
+			                <input type="radio" id="radio2" name="radio" /><label for="radio2">Hide All</label>
+			                <input type="radio" id="radio3" name="radio" /><label for="radio3">Show Passes</label>
+			                <input type="radio" id="radio4" name="radio" /><label for="radio4">Hide Passes</label>
+		                </div>
+	                </form>
+	            </div>
+	        </div>
+		</div>
+		</div>
+	</body>
+</html>
+
+

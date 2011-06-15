@@ -295,11 +295,12 @@ var SundaeTestsFile = 'tests.json';
         var b = createCanvas(d, name + '-second', 100, 100);
         var c = createCanvas(d, name + '-diff', 100, 100);
         r.innerHTML = test.name + ': Running...';
-        test.time = {};
-        test.time.first = 3;
-        test.time.second = 3;
-        test.time.firstStart = 0;
-        test.time.secondStart = 0;
+        test.time = {
+            first: 3,
+            second: 3,
+            firstStart: 0,
+            secondStart: 0  
+        };
         function runTest(id, func) {
             var who = id.substring(id.lastIndexOf('-') + 1, id.length);
             test.time[who + 'Start'] = (new Date()).getTime();
@@ -307,12 +308,7 @@ var SundaeTestsFile = 'tests.json';
         }
         var isDone = {'first' : false, 'second' : false};
         var whenDone = function (who) {
-            if (test[who + 'Canvas'].src) {
-                if (test[who + 'Canvas'].src.type !== 'image') {
-                    test.time[who] = (new Date()).getTime() - test.time[who + 'Start'];
-                }
-	        }
-	        else {
+            if (!test[who + 'Canvas'].src || (test[who + 'Canvas'].src && test[who + 'Canvas'].src.type !== 'image')) {
                 test.time[who] = (new Date()).getTime() - test.time[who + 'Start'];
 	        }
             isDone[who] = true;
