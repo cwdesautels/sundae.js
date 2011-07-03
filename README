@@ -2,66 +2,65 @@
 
   Sundae.js a Javascript Canvas Reference Tester
   http://sundae.lighthouseapp.com/dashboard
-  http://zenit.senecac.on.ca/wiki/index.php/User:Cwdesautels/sundae
-  http://cwd89.blogspot.com/
+  http://cwdesautels.blogspot.com/
 
   The MIT License
   Copyright (c) 2011 Carlin Desautels
   http://www.opensource.org/licenses/mit-license.php
 
 =========================
+<script type="text/javascript" src="sundae.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
 
-  USAGE:
-    Your source will get loaded, supported formats below,
-    your function will receive a canvas and a callback. Fill
-    the canvas and use the callback when you are done! Easy.
 
-  API: tests.json
-
-=================================
-
-{
-    //Array of suites within the scope of the program
-    "blurRadius": numForGlobalBlurRadius,
-    "tolerance": numForGlobalTolerance,
-    "testSuite": [
-        {
-            "blurRadius": numForSuiteRadius,
-            "tolerance": numForSuiteTolerance,
-            "dependancyURL": ["array of URL strings"] OR "just a single string",
-            "setup" : { //Run once after libraries are loaded and before tests start
-                "src": {
-                    "url": "fileUrl" ,
-                    "type": "supported types-> script"
-                },
-                "run": {}
-            }
-            "test": [
-                {
-                    "blurRadius": numForTestRadius,
-                    "tolerance": numForTestTolerance,
-                    "name": "string",
-                    "note": "string",
-                    "tag": "string",
-                    "knownFail": "true OR false",
-                    "firstCanvas" : {
-                        "src" : {
-                            "url" : "fileUrl",
-                            "type" : "supported types-> json, script, image"
-                        },
-                        "run" : "global function name OR function(aCanvas, callback){ definition; callback(); }"
-                    },
-                    "secondCanvas" : {
-                        "src" : {
-                            "url" : "fileUrl",
-                            "type" : "supported types-> json, script, image"
-                        },
-                        "run" : "global function name OR function(aCanvas, callback){ definition; callback(); }"
-                    }
-                },{//More test objects},{...}
-            ]
-        },{//More testSuite objects},{...}
-    ]
-}
+    var s = Sundae('#divID')
+    //
+    // Add your tests!
+    .addTest({
+        blurRadius: 2,//px
+        tolerance: 100,//%
+        name: "string",
+        note: "string",
+        tag: "string",
+        knownFail: false,
+        //Required for the tests!
+        firstCanvas :  //"Image Uri" OR "function name" OR function(aCanvas, callback){ definition; callback(); },
+        secondCanvas : //"Image Uri" OR "function name" OR function(aCanvas, callback){ definition; callback(); }
+    })
+    // Add an array of tests
+    .addTests([{
+        //Test case from above
+        },{},{} //More test cases
+    ])
+    // Add an array of tests from a file
+    .addTestFile("jsonFileName")
+    //
+    // Optional Globals
+    .setBlur(2)
+    .setTolerance(5)
+    .addLibrary("scriptUri")
+    .addLibraries([
+        "scriptUri",
+        "scriptUri"
+    ])
+    //
+    // Optional Events
+    .onReady(
+        function(){}  
+    )
+    .onComplete(
+        function(){}
+    )
+    //
+    // Can invoke this anytime, Attach it to a button!
+    .start();
+    //
+    // Non Chainable
+    s.getTags()
+    s.getTests()//Adds pass boolean to test properties
+    
+}, false);
+</script>
 
 =========================================

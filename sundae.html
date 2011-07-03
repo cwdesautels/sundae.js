@@ -6,7 +6,7 @@
 		<link type="text/css" href="css/smoothness/jquery-ui-1.8.13.custom.css" rel="stylesheet" />	
 		<script type="text/javascript" src="js/jquery-1.5.1.min.js"></script>
 		<script type="text/javascript" src="js/jquery-ui-1.8.13.custom.min.js"></script>
-		<script type='text/javascript' src='sundae.js' ></script>
+		<script type="text/javascript" src="sundae.js"></script>
 		<script type="text/javascript">
             var updateTolerance = function(event, ui){
                 var tolerance = ui.value;
@@ -22,6 +22,7 @@
                 sundae.setBlurRadius(blur);
             };
 			$(function(){
+			    $("#type").combobox();
 				$("#radioset").buttonset();
 				$("#radio1").click(function(){
 				    sundae.eventShowAll();
@@ -54,6 +55,8 @@
 			        slide: updateBlur
 		        });
 		        $("#blurAmount").val($("#blur").slider("value") + "px");
+		        
+		        
 			});
 			var d = document;
             //Setting dropdownlist
@@ -80,6 +83,11 @@
 	<p style="font-size: 1.3em; line-height: 1.5; margin: 1em 0; width: 50%;">This page demonstrates using <a href="sundae.js">Sundae.js</a> with its bundled test suites. It was built using: a minified versions of <a href="js/jquery-1.5.1.min.js">jQuery</a>, a personalized copy of <a href="js/jquery-ui-1.8.13.custom.min.js">jQuery UI</a>, and <a href="css/smoothness/jquery-ui-1.8.13.custom.css">JQuery CSS</a>. For further instructions on using Sundae referr to the <a href="README">README</a> and for development information see <a href="https://github.com/cwdesautels/sundae.js">github</a> or contribute by filing bugs at <a href="http://sundae.lighthouseapp.com/projects/68207-sundaejs/overview">Lighthouse</a>.</p>	
 	<p style="font-weight: bold; margin: 2em 0 1em; font-size: 1.3em;">Settings:</p>
 		<div class="setup">
+		    <div id="typeList">
+		        <label for="type">Select tests:</label>
+		        <select id="type">
+		        </select>
+		    </div>
 	        <p>
 	            <label for="toleranceAmount">Tolerance:</label>
                 <input type="text" id="toleranceAmount" style="border:0; color:#f6931f; font-weight:bold;" />
