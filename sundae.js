@@ -1,5 +1,5 @@
 /*!
- * Sundae Javascript Library v0.9
+ * Sundae Javascript Library v2.0
  * http://sundae.lighthouseapp.com/dashboard
  *
  * Copyright (c) 2011 Carlin Desautels
