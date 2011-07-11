@@ -37,8 +37,8 @@
         s.src = src;
         window.document.head.appendChild(s);
     },
-    workerQueue = function(num, callback){
-        var list = [], getThread = (function(n){
+    Queue = function(num, callback){
+        var that = this, list = [], getThread = (function(n){
             var worker = [], temp, setup = function (me) {
                 temp = new Worker('slave.js');
                 temp.onerror = function (event) {
@@ -46,7 +46,7 @@
                 };
                 temp.onmessage = function (event) {
                     callback(event.data);
-                    var data = Queue.pop();
+                    var data = that.pop();
                     if (data) {
                         this.postMessage(data);
                     }
@@ -83,18 +83,6 @@
         };
     },
     Chain = function(callback){
-        var head, tail,
-        Bucket = function(){
-            var nodes = [];
-            Bucket.prototype.next = undefined;
-            Bucket.prototype.push = function(node){
-                nodes.push(node);
-            };
-            Bucket.prototype.get = function(){
-                return nodes;
-            };
-        };
-        head = tail = undefined;
         Chain.prototype.callback = callback || noop;
         Chain.prototype.isEmpty = function(){ return head === undefined; };
         Chain.prototype.cont = function(num){
@@ -108,23 +96,28 @@
         };
         Chain.prototype.next = function(){
             var nb = new Bucket();
-            if(this.isEmpty()){
+            if(that.isEmpty()){
                 head = tail = nb;
             }
             else {
                 tail.next = nb;
                 tail = nb;
             }
-            return this;
+            return that;
         };
         Chain.prototype.add = function(node){
-            if(this.isEmpty()){
-                head = tail = new Bucket();
+            if(typeof(node) === 'function'){
+                if(that.isEmpty()){
+                    head = tail = new Bucket();
+                }
+                tail.push(node);
             }
-            tail.push(node);
         };
         Chain.prototype.pop = function(){
-            if(!this.isEmpty()){
+            if(that.isEmpty()){
+                return undefined;
+            }
+            else{
                 var data = head.data;
                 if(head.next === undefined){
                     head = tail = undefined;       
@@ -134,27 +127,48 @@
                 }
                 return data;
             }
-            else{
-                return undefined;
-            }
         };
         Chain.prototype.run = function(){
-            if(!this.isEmpty()){
-                var arr = (this.pop()).get();
-                for(var i = 0, len = arr.length; i < len; i++){
-                    arr[i](this.cont(len));
-                }
+            if(that.isEmpty()){
+                that.callback();
             }
             else {
-                this.callback();
+                var obj = that.pop();
+                var arr = obj.get();
+                for(var i = 0, len = arr.length; i < len; i++){
+                    arr[i](that.cont(len));
+                }
             }
         };
+        var that = this, head, tail,
+        Bucket = function(){
+            var nodes = [];
+            Bucket.prototype.next = undefined;
+            Bucket.prototype.push = function(node){
+                nodes.push(node);
+            };
+            Bucket.prototype.get = function(){
+                return nodes;
+            };
+        };
+        head = tail = undefined;
+    },
+    putPixels2D = function(id, pixels) {
+        var c = window.document.getElementById(id);
+        var cCtx = c.getContext('2d');
+        var img = cCtx.getImageData(0, 0, c.width, c.height);
+        for (var i = 0, len = pixels.length; i < len; i++) {
+            img.data[i] = pixels[i];
+        }
+        cCtx.putImageData(img, 0, 0);
     };
     var Sundae = window.Sundae = function(divId){
         //Instance Variables
-        var running, imp, add, complete, go, 
+        var running, imp, add, complete, 
         container = {}, 
-        queue = new workerQueue(4, noop),
+        queue = new Queue(4, function(data){
+            putPixels2D(data.id, data.pix);
+        }),
         chain = new Chain(),
         tolerance = 0.05,
         blur = 2, 
@@ -162,7 +176,7 @@
         tag = 'all';
         //Initialization
         container = window.document.getElementById('divId');
-        running = imp = add = complete = go = noop;
+        running = imp = add = complete = noop;
         //Sundae Object
         return {
             noop: noop,
@@ -325,6 +339,7 @@
                     //start function
                 };
                 chain.run();
+                alert(container);
                 return this;
             }
         };
