@@ -82,7 +82,7 @@
             return list.pop();
         };
     },
-    Chain = function(){
+    Chain = function(callback){
         var head, tail,
         Bucket = function(){
             var nodes = [];
@@ -95,7 +95,7 @@
             };
         };
         head = tail = undefined;
-        Chain.prototype.callback = noop;
+        Chain.prototype.callback = callback || noop;
         Chain.prototype.isEmpty = function(){ return head === undefined; };
         Chain.prototype.cont = function(num){
             var i = 0;
@@ -146,7 +146,7 @@
                 }
             }
             else {
-                callback();
+                this.callback();
             }
         };
     };
