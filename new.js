@@ -82,33 +82,49 @@
             return list.pop();
         };
     },
-    functionChain = function(){
-        var Bucket = function(arr){
+    Chain = function(){
+        var head, tail,
+        Bucket = function(){
+            var nodes = [];
             Bucket.prototype.next = undefined;
-            Bucket.prototype.data = arr;
-        }, head, tail;
-        head = tail = undefined;
-        functionChain.prototype.isEmpty = function(){
-            return head === undefined;
+            Bucket.prototype.push = function(node){
+                nodes.push(node);
+            };
+            Bucket.prototype.get = function(){
+                return nodes;
+            };
         };
-        functionChain.prototype.push = function(arr){
-            var nn;
-            if(arr instanceof Array){
-                nn = new Bucket(arr);
-            }
-            else{
-                nn = new Bucket([arr]);
-            }
-            if(functionChain.isEmpty()){
-                head = tail = nn;
+        head = tail = undefined;
+        Chain.prototype.callback = noop;
+        Chain.prototype.isEmpty = function(){ return head === undefined; };
+        Chain.prototype.cont = function(num){
+            var i = 0;
+            return function(){
+                i++;
+                if(num === i){
+                    this.run();
+                }
+            };
+        };
+        Chain.prototype.next = function(){
+            var nb = new Bucket();
+            if(this.isEmpty()){
+                head = tail = nb;
             }
             else {
-                tail.next = nn;
-                tail = nn;
+                tail.next = nb;
+                tail = nb;
             }
+            return this;
         };
-        functionChain.prototype.pop = function(){
-            if(!functionChain.isEmpty()){
+        Chain.prototype.add = function(node){
+            if(this.isEmpty()){
+                head = tail = new Bucket();
+            }
+            tail.push(node);
+        };
+        Chain.prototype.pop = function(){
+            if(!this.isEmpty()){
                 var data = head.data;
                 if(head.next === undefined){
                     head = tail = undefined;       
@@ -122,12 +138,15 @@
                 return undefined;
             }
         };
-        functionChain.prototype.run = function(){
-            while(!functionChain.isEmpty()){
-                var bucket = functionChain.pop();
-                for(var i = 0, len = bucket.data.length; i < len; i++){
-                    bucket.data[i]();
+        Chain.prototype.run = function(){
+            if(!this.isEmpty()){
+                var arr = (this.pop()).get();
+                for(var i = 0, len = arr.length; i < len; i++){
+                    arr[i](this.cont(len));
                 }
+            }
+            else {
+                callback();
             }
         };
     };
@@ -136,14 +155,11 @@
         var running, imp, add, complete, go, 
         container = {}, 
         queue = new workerQueue(4, noop),
-        list = new functionChain(),
+        chain = new Chain(),
         tolerance = 0.05,
         blur = 2, 
         tests = [], 
-        tag = 'all',
-        tasks = 0,
-        total = 0,
-        canStart = function(){ return tasks === 0 && tests.length === total; };
+        tag = 'all';
         //Initialization
         container = window.document.getElementById('divId');
         running = imp = add = complete = go = noop;
@@ -155,7 +171,6 @@
                     if(obj instanceof Object){
                         tests.push(obj);
                         add();
-                        go();
                     }
                     else {
                         throw new Error("Argument Type Mismatch: addTest expected an Object");
@@ -166,9 +181,7 @@
             addTests: function(arr){
                 if(arr){
                     if(arr instanceof Array){
-                        var len = arr.length;
-                        total += len;
-                        for(var i = 0; i < len; i++){
+                        for(var i = 0, len = arr.length; i < len; i++){
                             this.addTest(arr[i]);
                         }
                     }
@@ -181,11 +194,10 @@
             addTestFile: function(file){
                 if(file){
                     if(typeof(file) === 'string'){
-                        tasks += 1;
-                        list.push(function(){
-                            getJson(file, function(arr){
-                                tasks -= 1;
-                                this.addTests(arr);
+                        chain.add(function(callback){
+                            getJson(file, function(data){
+                                this.addTests(data);
+                                callback();
                             });
                         });
                     }
@@ -216,11 +228,10 @@
             addLibrary: function(lib){
                 if(lib){
                     if(typeof(lib) === 'string'){
-                        tasks += 1;
-                        list.push(function(){
+                        chain.next().add(function(callback){
                             getScript(lib, function(){
-                                tasks -= 1;
-                                go();
+                                imp();
+                                callback();
                             });
                         });
                     }
@@ -233,17 +244,17 @@
             addLibraries: function(arr){
                 if(arr){
                     if(arr instanceof Array){
-                        var libs = [], len = arr.length;
-                        tasks += len;
-                        for(var i = 0; i < len; i++){
-                            libs.push(function(){
-                                getScript(arr[i], function(){
-                                    tasks -= 1;
-                                    go();
-                                });
-                            });
+                        chain.next();
+                        for(var i = 0, len = arr.length; i < len; i++){
+                            chain.add((function(me){
+                                return function(callback){
+                                    getScript(arr[me], function(){
+                                        imp();
+                                        callback();
+                                    });
+                                };
+                            })(i));
                         }
-                        list.push(libs);
                     }
                     else {
                         throw new Error("Argument Type Mismatch: addLibraries expected an Array");
@@ -310,13 +321,10 @@
                 return tests;
             },
             start: function(){
-                list.run();
-                go = function(){
-                    if(canStart()){
-                        //start function
-                    }
+                chain.callback = function(){
+                    //start function
                 };
-                go();
+                chain.run();
                 return this;
             }
         };
