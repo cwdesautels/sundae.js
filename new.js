@@ -1,34 +1,39 @@
 (function (window, undefined){
     //Global constants
     var noop = function(){},
-        error = function(str){throw new Error(str);},
         epsilon = function(e){
             return (Math.abs(e) % 101) / 100;
         },
         sigma = function(s){
             return Math.abs(s);
         },
-        isLoaded = function(src, arr) {
-            for(var i = 0, len = arr.length; i < len; i++){
-                if(arr[i].src === src){
-                    return true;
-                }
+        isLoaded = function(obj, att) {
+            if(obj[att] && obj[att] === true){
+                return true;
             }
             return false;
+        },
+        canStart = function(obj){
+            for(var i in obj){
+                if(arr[i] === false){
+                    return false;
+                }
+            }
+            return true;
         },
         getJson = function (src, callback) {
             var r = new XMLHttpRequest();
             r.open('GET', src, true);
             r.overrideMimeType('application/json');
             r.onerror = function () {
-                error('JSON load failed: ' + src);
+                throw new Error('JSON load failed: ' + src);
             };
             r.onload = function () {
                 try {
                     callback(JSON.parse(r.responseText));
                 }
                 catch (e) {
-                    error('JSON was not valid: ' + src);
+                    throw new Error('JSON was not valid: ' + src);
                 }
             };
             r.send(null);
@@ -37,7 +42,7 @@
             var s = window.document.createElement('script');
             s.type = 'text/javascript';
             s.onerror = function () {
-                error('Script load failed: ' + src);
+                throw new Error('Script load failed: ' + src);
             };
             s.onload = function () {
                 callback();
@@ -47,15 +52,15 @@
             window.document.head.appendChild(s);
         },
         Queue = function(num, callback){
-            var list = [], pool = (function(n){
+            var list = [], getThread = (function(n){
                 var worker = [], temp, setup = function (me) {
                     temp = new Worker('slave.js');
                     temp.onerror = function (event) {
-                        error('Worker Thread Error' + event.message);
+                        throw new Error('Worker Thread Error' + event.message);
                     };
                     temp.onmessage = function (event) {
                         callback(event.data);
-                        var data = _queue.pop();
+                        var data = Queue.pop();
                         if (data) {
                             this.postMessage(data);
                         }
@@ -65,7 +70,10 @@
                     };
                     worker.push({'worker' : temp, 'status' : true});
                 };
-                this.getThread = function () {
+                while (n--) {
+                    setup(n);
+                }
+                return function () {
                     var n = worker.length;
                     while (n--) {
                         if (worker[n].status) {
@@ -73,13 +81,10 @@
                             return worker[n].worker;
                         }
                     }
-                };
-                while (n--) {
-                    setup(n);
-                }          
+                };         
             })(num);
             Queue.prototype.push = function (data) {
-                var worker = pool.getThread();
+                var worker = getThread();
                 if (worker) {
                     worker.postMessage(data);
                 }
@@ -94,25 +99,27 @@
     var Sundae = window.Sundae = function(divId){
         //Instance Variables
         var running, ready, complete, container, queue,
-        tolerance, blur, tests, tag, files, start, loading;
+        tolerance, blur, tests, tag, files, start;
         //Initialization
         queue = container = {};
         tests = files = [];
         tolerance = 5; 
         blue = 2;
         tag = 'all';
-        running = ready = complete = noop;
-        start = loading = false;
+        running = ready = complete = start = noop;
         return {
             noop: noop,
             addTest: function(obj){
                 if(obj){
                     if(obj instanceof Object){
                         tests.push(obj);
+                        if(canStart(files)){
+                           start(); 
+                        }
                         ready();
                     }
                     else {
-                        error("Argument Type Mismatch: addTest expected an Object");
+                        throw new Error("Argument Type Mismatch: addTest expected an Object");
                     }
                 }
                 return this;
@@ -125,7 +132,7 @@
                         }
                     }
                     else {
-                        error("Argument Type Mismatch: addTests expected an Array");
+                        throw new Error("Argument Type Mismatch: addTests expected an Array");
                     }
                 }
                 return this;
@@ -133,13 +140,19 @@
             addTestFile: function(file){
                 if(file){
                     if(typeof(file) === 'string'){
-                        if(!isLoaded(file, files)){
-                            files.push({src: file, status: false});
-                            getJson(file, this.addTests);
+                        if(!isLoaded(files, file)){
+                            files[file] = false;
+                            getJson(file, function(){
+                                files[file] = true;
+                                if(canStart(files)){
+                                   start(); 
+                                }	
+                                this.addTests
+                            });
                         }
                     }
                     else {
-                        error("Argument Type Mismatch: addTestFile expected a String");
+                        throw new Error("Argument Type Mismatch: addTestFile expected a String");
                     }
                 }
                 return this;
@@ -165,13 +178,20 @@
             addLibrary: function(lib){
                 if(lib){
                     if(typeof(lib) === 'string'){
-                        if(!isLoaded(lib, files)){
-                            files.push({src: lib, status: false});
-                            getScript(lib, ready);
+                        if(!isLoaded(files, lib)){
+                            files[lib] = false;
+                            getScript(lib, 
+                            function(){
+                                files[lib] = true;
+                                if(canStart()){
+                                   start(); 
+                                }
+                                ready();
+                            });
                         }
                     }
                     else {
-                        error("Argument Type Mismatch: addLibrary expected a String");
+                        throw new Error("Argument Type Mismatch: addLibrary expected a String");
                     }
                 }
                 return this;
@@ -184,7 +204,7 @@
                         }
                     }
                     else {
-                        error("Argument Type Mismatch: addLibraries expected an Array");
+                        throw new Error("Argument Type Mismatch: addLibraries expected an Array");
                     }
                 }
                 return this;
@@ -195,7 +215,7 @@
                         ready = callback;
                     }
                     else {
-                        error("Argument Type Mismatch: onReady expected a Function");
+                        throw new Error("Argument Type Mismatch: onReady expected a Function");
                     }
                 }
                 return this;
@@ -206,7 +226,7 @@
                         running = callback;
                     }
                     else {
-                        error("Argument Type Mismatch: onRunning expected a Function");
+                        throw new Error("Argument Type Mismatch: onRunning expected a Function");
                     }
                 }
                 return this;
@@ -217,7 +237,7 @@
                         complete = callback;
                     }
                     else {
-                        error("Argument Type Mismatch: onComplete expected a Function");
+                        throw new Error("Argument Type Mismatch: onComplete expected a Function");
                     }
                 }
                 return this;
@@ -238,17 +258,11 @@
             },
             start: function(){
                 queue = new Queue(4, noop);
-                for(var i = 0, len = files.length; i < len; i++){
-                    if(files[i].status === false){
-                        loading = true;
-                        break;
-                    }
-                }
-                if(!loading){
-                    //start                    
+                if(canStart(files)){
+                    start();
                 }
                 else {
-                    start = true;   
+                    start = noop;   
                 }
                 return this;
             }
