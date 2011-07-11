@@ -8,7 +8,7 @@
 		<script type="text/javascript" src="new.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                var s = Sundae('#divID')
+                var s = Sundae("#blur")
                 .addTest({
                     blurRadius: 2,//px 0-7
                     tolerance: 100,//%
@@ -28,19 +28,22 @@
                 .addTestFile()
                 .setBlur(2)
                 .setTolerance(5)
-                //.addLibrary("scriptUri")
+                .addLibrary("scriptUri")
                 .addLibraries([
                     "scriptUri",
                     "scriptUri"
                 ])
+                .onRunning(
+                    function(){console.log ("onRunning()");}  
+                )
                 .onAdd(
-                    function(){}  
+                    function(){console.log ("onAdd()");}  
                 )
                 .onImport(
-                    function(){}
+                    function(){console.log ("onImport()");}
                 )
                 .onComplete(
-                    function(){}
+                    function(){console.log ("onComplete()");}
                 )
                 .start();
                 s.getTags();

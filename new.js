@@ -82,55 +82,40 @@
             return list.pop();
         };
     },
-    Chain = function(callback){
-        Chain.prototype.callback = callback || noop;
-        Chain.prototype.isEmpty = function(){ return head === undefined; };
+    Chain = function(){
+        Chain.prototype.onBucket = noop;
+        Chain.prototype.onComplete = noop;
+        Chain.prototype.isEmpty = function(){ return chain.length === 0; };
         Chain.prototype.cont = function(num){
             var i = 0;
             return function(){
                 i++;
                 if(num === i){
-                    this.run();
+                    that.onBucket();
+                    that.run();
                 }
             };
         };
-        Chain.prototype.next = function(){
-            var nb = new Bucket();
-            if(that.isEmpty()){
-                head = tail = nb;
+        Chain.prototype.next = function(node){
+            if(node !== undefined){
+                chain.push(new Bucket());
+                that.add(node);
             }
-            else {
-                tail.next = nb;
-                tail = nb;
-            }
-            return that;
         };
         Chain.prototype.add = function(node){
             if(typeof(node) === 'function'){
                 if(that.isEmpty()){
-                    head = tail = new Bucket();
+                    that.next(node);
                 }
-                tail.push(node);
+                chain[chain.length-1].push(node);
             }
         };
         Chain.prototype.pop = function(){
-            if(that.isEmpty()){
-                return undefined;
-            }
-            else{
-                var data = head.data;
-                if(head.next === undefined){
-                    head = tail = undefined;       
-                }
-                else {
-                    head = head.next;
-                }
-                return data;
-            }
+            return chain.pop();
         };
         Chain.prototype.run = function(){
             if(that.isEmpty()){
-                that.callback();
+                that.onComplete();
             }
             else {
                 var obj = that.pop();
@@ -140,7 +125,7 @@
                 }
             }
         };
-        var that = this, head, tail,
+        var that = this, chain = [],
         Bucket = function(){
             var nodes = [];
             Bucket.prototype.next = undefined;
@@ -151,7 +136,6 @@
                 return nodes;
             };
         };
-        head = tail = undefined;
     },
     putPixels2D = function(id, pixels) {
         var c = window.document.getElementById(id);
@@ -164,7 +148,7 @@
     };
     var Sundae = window.Sundae = function(divId){
         //Instance Variables
-        var running, imp, add, complete, 
+        var onRrunning, onImport, onAdd, onComplete, that = this,
         container = {}, 
         queue = new Queue(4, function(data){
             putPixels2D(data.id, data.pix);
@@ -175,173 +159,177 @@
         tests = [], 
         tag = 'all';
         //Initialization
-        container = window.document.getElementById('divId');
-        running = imp = add = complete = noop;
-        //Sundae Object
-        return {
-            noop: noop,
-            addTest: function(obj){
-                if(obj){
-                    if(obj instanceof Object){
-                        tests.push(obj);
-                        add();
-                    }
-                    else {
-                        throw new Error("Argument Type Mismatch: addTest expected an Object");
-                    }
-                }
-                return this;
-            },
-            addTests: function(arr){
-                if(arr){
-                    if(arr instanceof Array){
-                        for(var i = 0, len = arr.length; i < len; i++){
-                            this.addTest(arr[i]);
+        onRunning = onImport = onAdd = onComplete = noop;
+        container = window.document.getElementById(divId);
+        if(container && container instanceof HTMLDivElement){
+            //Sundae Object
+            return {
+                noop: noop,
+                addTest: function(obj){
+                    if(obj){
+                        if(obj instanceof Object){
+                            tests.push(obj);
+                            onAdd();
+                        }
+                        else {
+                            throw new Error("Argument Type Mismatch: addTest expected an Object");
                         }
                     }
-                    else {
-                        throw new Error("Argument Type Mismatch: addTests expected an Array");
-                    }
-                }
-                return this;
-            },
-            addTestFile: function(file){
-                if(file){
-                    if(typeof(file) === 'string'){
-                        chain.add(function(callback){
-                            getJson(file, function(data){
-                                this.addTests(data);
-                                callback();
-                            });
-                        });
-                    }
-                    else {
-                        throw new Error("Argument Type Mismatch: addTestFile expected a String");
-                    }
-                }
-                return this;
-            },
-            setBlur: function(num){
-                if(num && !isNaN(num = parseInt(num))){
-                    blur = sigma(num);
-                }
-                return this;
-            },
-            setTolerance: function(num){
-                if(num && !isNaN(num = parseInt(num))){
-                    tolerance = epsilon(num);
-                }
-                return this;
-            },
-            setTag: function(str){
-                if(str){
-                    tag = str + '';
-                }
-                return this;
-            },
-            addLibrary: function(lib){
-                if(lib){
-                    if(typeof(lib) === 'string'){
-                        chain.next().add(function(callback){
-                            getScript(lib, function(){
-                                imp();
-                                callback();
-                            });
-                        });
-                    }
-                    else {
-                        throw new Error("Argument Type Mismatch: addLibrary expected a String");
-                    }
-                }
-                return this;
-            },
-            addLibraries: function(arr){
-                if(arr){
-                    if(arr instanceof Array){
-                        chain.next();
-                        for(var i = 0, len = arr.length; i < len; i++){
-                            chain.add((function(me){
-                                return function(callback){
-                                    getScript(arr[me], function(){
-                                        imp();
-                                        callback();
-                                    });
-                                };
-                            })(i));
+                    return this;
+                },
+                addTests: function(arr){
+                    if(arr){
+                        if(arr instanceof Array){
+                            for(var i = 0, len = arr.length; i < len; i++){
+                                this.addTest(arr[i]);
+                            }
+                        }
+                        else {
+                            throw new Error("Argument Type Mismatch: addTests expected an Array");
                         }
                     }
-                    else {
-                        throw new Error("Argument Type Mismatch: addLibraries expected an Array");
+                    return this;
+                },
+                addTestFile: function(file){
+                    if(file){
+                        if(typeof(file) === 'string'){
+                            chain.add(function(callback){
+                                getJson(file, function(data){
+                                    this.addTests(data);
+                                    callback();
+                                });
+                            });
+                        }
+                        else {
+                            throw new Error("Argument Type Mismatch: addTestFile expected a String");
+                        }
                     }
+                    return this;
+                },
+                setBlur: function(num){
+                    if(num && !isNaN(num = parseInt(num))){
+                        blur = sigma(num);
+                    }
+                    return this;
+                },
+                setTolerance: function(num){
+                    if(num && !isNaN(num = parseInt(num))){
+                        tolerance = epsilon(num);
+                    }
+                    return this;
+                },
+                setTag: function(str){
+                    if(str){
+                        tag = str + '';
+                    }
+                    return this;
+                },
+                addLibrary: function(lib){
+                    if(lib){
+                        if(typeof(lib) === 'string'){
+                            chain.next(function(callback){
+                                getScript(lib, function(){
+                                    onImport();
+                                    callback();
+                                });
+                            });
+                        }
+                        else {
+                            throw new Error("Argument Type Mismatch: addLibrary expected a String");
+                        }
+                    }
+                    return this;
+                },
+                addLibraries: function(arr){
+                    if(arr){
+                        if(arr instanceof Array){
+                            chain.next();
+                            for(var i = 0, len = arr.length; i < len; i++){
+                                chain.add((function(me){
+                                    return function(callback){
+                                        getScript(arr[me], function(){
+                                            onImport();
+                                            callback();
+                                        });
+                                    };
+                                })(i));
+                            }
+                        }
+                        else {
+                            throw new Error("Argument Type Mismatch: addLibraries expected an Array");
+                        }
+                    }
+                    return this;
+                },
+                onAdd: function(callback){
+                    if(callback){
+                        if(typeof(callback) === 'function'){
+                            onAdd = callback;
+                        }
+                        else {
+                            throw new Error("Argument Type Mismatch: onReady expected a Function");
+                        }
+                    }
+                    return this;
+                },
+                onImport: function(callback){
+                    if(callback){
+                        if(typeof(callback) === 'function'){
+                            onImport = callback;
+                        }
+                        else {
+                            throw new Error("Argument Type Mismatch: onReady expected a Function");
+                        }
+                    }
+                    return this;
+                },
+                onRunning: function(callback){
+                    if(callback){
+                        if(typeof(callback) === 'function'){
+                            onRunning = callback;
+                        }
+                        else {
+                            throw new Error("Argument Type Mismatch: onRunning expected a Function");
+                        }
+                    }
+                    return this;
+                },
+                onComplete: function(callback){
+                    if(callback){
+                        if(typeof(callback) === 'function'){
+                            onComplete = callback;
+                        }
+                        else {
+                            throw new Error("Argument Type Mismatch: onComplete expected a Function");
+                        }
+                    }
+                    return this;
+                },
+                getTags: function(){
+                    var arr = [];
+                    arr.push('all');
+                    for(var i = 0, tag = undefined, len = tests.length; i < len; i ++){
+                        tag = tests[i].tag;
+                        if(tag){
+                            arr.push(tag);
+                        }
+                    }
+                    return arr;
+                },
+                getTests: function(){
+                    return tests;
+                },
+                start: function(){
+                    chain.onComplete = function(){
+                        //start function
+                    };
+                    chain.run();
+                    return this;
                 }
-                return this;
-            },
-            onAdd: function(callback){
-                if(callback){
-                    if(typeof(callback) === 'function'){
-                        add = callback;
-                    }
-                    else {
-                        throw new Error("Argument Type Mismatch: onReady expected a Function");
-                    }
-                }
-                return this;
-            },
-            onImport: function(callback){
-                if(callback){
-                    if(typeof(callback) === 'function'){
-                        imp = callback;
-                    }
-                    else {
-                        throw new Error("Argument Type Mismatch: onReady expected a Function");
-                    }
-                }
-                return this;
-            },
-            onRunning: function(callback){
-                if(callback){
-                    if(typeof(callback) === 'function'){
-                        running = callback;
-                    }
-                    else {
-                        throw new Error("Argument Type Mismatch: onRunning expected a Function");
-                    }
-                }
-                return this;
-            },
-            onComplete: function(callback){
-                if(callback){
-                    if(typeof(callback) === 'function'){
-                        complete = callback;
-                    }
-                    else {
-                        throw new Error("Argument Type Mismatch: onComplete expected a Function");
-                    }
-                }
-                return this;
-            },
-            getTags: function(){
-                var arr = [];
-                arr.push('all');
-                for(var i = 0, tag = undefined, len = tests.length; i < len; i ++){
-                    tag = tests[i].tag;
-                    if(tag){
-                        arr.push(tag);
-                    }
-                }
-                return arr;
-            },
-            getTests: function(){
-                return tests;
-            },
-            start: function(){
-                chain.callback = function(){
-                    //start function
-                };
-                chain.run();
-                alert(container);
-                return this;
-            }
-        };
+            };
+        }
+        else {
+            throw new Error("Sundae Initialization: HTML Div Id not provided");
+        }
     };
 })(window);
