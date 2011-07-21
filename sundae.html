@@ -7,8 +7,8 @@
 		<script type="text/javascript" src="js/jquery-ui-1.8.13.custom.min.js"></script>
 		<script type="text/javascript" src="new.js"></script>
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                var s = Sundae("#blur")
+            Sundae(function() {
+                var s = sundae("blur")
                 .addTest({
                     blurRadius: 2,//px 0-7
                     tolerance: 100,//%
@@ -25,13 +25,15 @@
                     //Test case from above
                     },{},{} //More test cases
                 ])
-                .addTestFile()
+                .addTestFile("tests.js")
                 .setBlur(2)
                 .setTolerance(5)
-                .addLibrary("scriptUri")
+                .addLibrary("resources/XB-PointStream/mjs.js")
                 .addLibraries([
-                    "scriptUri",
-                    "scriptUri"
+                    "resources/XB-PointStream/psapi.js",
+                    "resources/XB-PointStream/parsers/asc.js",
+                    "resources/XB-PointStream/parsers/psi.js",
+                    "resources/XB-PointStream/parsers/pts.js"
                 ])
                 .onRunning(
                     function(){console.log ("onRunning()");}  
@@ -83,7 +85,7 @@
 		            });
 		            $("#blurAmount").val($("#blur").slider("value") + "px");  
 			    });*/
-            }, false);
+            });
         </script>
 		<style type="text/css">
             #tolerance, #blur {
